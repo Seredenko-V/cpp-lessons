@@ -10,6 +10,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <list>
 #include <iterator>
 
 using namespace std;
@@ -120,5 +121,25 @@ int main() {
 	//}
 	//cout << "SIZE = " << first_map.size() << endl;
 
+
+	/* LIST */
+	//https://ru.cppreference.com/w/cpp/container/list
+	list<int> first_list = { 5, 6, 7, 12, 99, 10 };
+	first_list.push_back(5);
+	first_list.push_front(0);
+	first_list.insert(next(first_list.begin(), 2), 4);
+	cout << "\n=================== LIST ===================\n"s;
+	for (const int& value : first_list) {
+		cout << value << " ";
+	}
+	cout << endl;
+	// если нам нужен, например, 7 элемент двунаправленного списка, то:
+	cout << "first_list[7] = "s << *next(first_list.begin(), 7) << endl;
+	*next(first_list.begin(), 7) = 23;
+	for (const int& value : first_list) {
+		cout << value << " ";
+	}
+	cout << endl;
+	cout << "first_list.size() = "s << first_list.size() << endl;
 	return 0;
 }
