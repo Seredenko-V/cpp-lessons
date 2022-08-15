@@ -1,51 +1,79 @@
 ﻿/******************************************************************************
 *
-* Абрамян М. Э.
-* While 15. Начальный вклад в банке равен 1000 руб. Через каждый месяц размер
-* вклада увеличивается на P процентов от имеющейся суммы (P — вещественное
-* число, 0 < P < 25). По данному P определить, через сколько месяцев размер
-* вклада превысит 1100 руб., и вывести найденное количество месяцев K
-* (целое число) и итоговый размер вклада S (вещественное число).
-*
+* Потоки ввода-вывода
+* https://kvodo.ru/urok-10-formatirovannyiy-vvod-vyivod-v-c.html
+* https://codemore.ru/2014/02/04/cpp-streams.html
+* https://metanit.com/cpp/tutorial/8.3.php
+* 
 *******************************************************************************/
 
 #include <iostream>
-#include <stdexcept>
-#include <cassert>
+#include <sstream>
+#include <fstream>
+#include <iomanip>
+#include <string>
 
 using namespace std;
 
-const double DELTA = 1e-6; // погрешность
-
 int main() {
 	setlocale(LC_ALL, "ru");
-	double S = 1000; // размер вклада, рубли
-	double P = 0; // % вклада
-	//if (S < 1000) {
-	//	cout << "Нарушение условия задачи"s << endl;
-	//	return 0;
-	//}
-	try {
-		if (S != 1000) {
-			throw invalid_argument("Начальное значение вклада противоречит условию."s);
-		}
-		if (0 > P || P > 25) {
-			throw invalid_argument("Значение процента вклада противоречит условию."s);
-		}
-		if (P <= DELTA) { // проверка на равенство double
-			throw invalid_argument("Вклад останется 1000 руб., т.к. % по вкладу равен нулю."s);
-		}
-		int K = 0; // количество месяцев
-		while (S < 1100) {
-			//assert(P > 0);
-			// Делим на 100, чтобы получить %, а на 12, т.к. 12 месяцев в году
-			S += S * P / 100 / 12;
-			++K;
-		}
-		cout << "Через "s << K << " месяцев размер вклада превысит 1100 руб."s << endl;
-		cout << "Итоговый размер вклада: "s << S << endl;
-	} catch (invalid_argument exception) {
-		cout << exception.what() << endl;
+	cout << "Тестовый "s << flush << "вывод"s << endl;
+	bool test_bool = true;
+	cout << test_bool << endl;
+	cout << boolalpha;
+	cout << test_bool << endl;
+	//int p = 64;
+	//cout.unsetf(ios::dec);
+	//cout.setf(ios::oct);
+	//cout << "p = "s << p << endl;
+	//int r = 25;
+	//cout.unsetf(ios::dec);
+	//cout.setf(ios::hex | ios::showbase);
+	//cout << "r = " << r << endl;
+	//cout.unsetf(ios::hex);
+	//cout.setf(ios::dec);
+	int r = 253;
+	cout << "r = " << hex << r << endl;
+
+
+	/* SSTREAM */
+	//cout << "============== SSTREAM =============="s << endl;
+	//string str = "1 2 3";
+	//istringstream iss(str);
+	//ostringstream oss;
+	//int a, b, c;
+	//iss >> a >> b >> c;
+	//oss << a << endl;
+	//oss << b << endl;
+	//oss << c;
+	//cout << oss.str();
+
+
+	/* FSTREAM */
+	// ВЫВОД В ФАЙЛ
+	ofstream fout_first;
+	fout_first.open("First_file.txt");
+	if (fout_first.is_open()) {
+		fout_first << "Пишем в файл"s << endl;
 	}
+	fout_first.close();
+
+	// создаем и открываем файл при инициализации потока
+	ofstream fout_second("Second_file.txt"); 
+	fout_second << "Написали во второй файл"s << endl;
+	fout_second.close();
+
+	// ЧТЕНИЕ ИЗ ФАЙЛА
+	string data;
+	ifstream read_from_file;
+	read_from_file.open("First_file.txt");
+	string tmp;
+	while (getline(read_from_file, tmp))
+	{
+		data += tmp;
+	}
+	//read_from_file >> data;
+	cout << data << endl;
+	read_from_file.close();
 	return 0;
 }
