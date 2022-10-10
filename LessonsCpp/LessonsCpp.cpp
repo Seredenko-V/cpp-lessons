@@ -152,7 +152,7 @@ public:
 
     ostream& GetTextSVG(ostream& out) const {
         out << "<circle cx=\""sv << center_.x << "\" cy=\""sv << center_.y << "\" "sv;
-        out << "r=\""sv << radius_ << "\" "sv;
+        out << "r=\""sv << radius_ << "\" fill=\"" << color_ << "\"";
         out << "/>"sv;
         return out;
     }
@@ -160,7 +160,7 @@ public:
 private:
     Point center_ = { 0.0, 0.0 };
     double radius_ = 1.0;
-    string color_ = "white"s;
+    string color_ = "red"s;
 };
 
 // Перерасчет координат У для рисования графика в положительной плоскости (см. оси координат изображений)
