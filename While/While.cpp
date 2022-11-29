@@ -11,7 +11,7 @@ double Calculate(double b, double c, double d, double q, double r, int n) {
 
 	double Xn = 0;
 	int k = 2;
-	while (k < n) {
+	while (k <= n) {
 		Xn = d * X1 + q * X0 + r;
 		cout << Xn << endl;
 		X0 = X1;

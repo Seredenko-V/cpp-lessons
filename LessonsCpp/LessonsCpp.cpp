@@ -11,9 +11,9 @@ double Calculate(double b, double c, double d, double q, double r, int n) {
 	}
 
 	double Xn = 0;
-	for (int k = 2; k < n; ++k) {
+	for (int k = 2; k <= n; ++k) {
 		Xn = d * X1 + q * X0 + r;
-		cout << Xn << endl;
+		//cout << Xn << endl;
 		X0 = X1;
 		X1 = Xn;
 	}
@@ -30,7 +30,7 @@ int main() {
 	double d = 5;
 	double q = 1;
 	double r = 7;
-	int n = 2;
+	int n = 4;
 
 	if (n < 2) {
 		cout << "Error. n < 2" << endl;
