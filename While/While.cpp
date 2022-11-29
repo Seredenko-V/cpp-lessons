@@ -2,7 +2,6 @@
 
 using namespace std;
 
-// возвращает Хn
 double Calculate(double b, double c, double d, double q, double r, int n) {
 	double X0 = b;
 	double X1 = c;
@@ -11,11 +10,13 @@ double Calculate(double b, double c, double d, double q, double r, int n) {
 	}
 
 	double Xn = 0;
-	for (int k = 2; k < n; ++k) {
+	int k = 2;
+	while (k < n) {
 		Xn = d * X1 + q * X0 + r;
 		cout << Xn << endl;
 		X0 = X1;
 		X1 = Xn;
+		++k;
 	}
 
 	return Xn;
@@ -23,7 +24,7 @@ double Calculate(double b, double c, double d, double q, double r, int n) {
 
 int main() {
 	setlocale(LC_ALL, "ru");
-	cout << "Реализация for" << endl;
+	cout << "Реализация while" << endl;
 
 	double b = 2;
 	double c = 4;
@@ -52,6 +53,4 @@ int main() {
 			break;
 		}
 	}
-
-	return 0;
 }

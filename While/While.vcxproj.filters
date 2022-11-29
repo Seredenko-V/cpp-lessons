@@ -15,10 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LessonsCpp.cpp">
-      <Filter>Исходные файлы</Filter>
-    </ClCompile>
-    <ClCompile Include="new_file.cpp">
+    <ClCompile Include="While.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
   </ItemGroup>
