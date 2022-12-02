@@ -1,57 +1,27 @@
 ﻿#include <iostream>
+#include  <cmath>
 
 using namespace std;
 
-// возвращает Хn
-double Calculate(double b, double c, double d, double q, double r, int n) {
-	double X0 = b;
-	double X1 = c;
-	if (n == 2) {
-		return X1;
+int Fact(int n) {
+	if (n == 0 || n == 1) {
+		return 1;
 	}
+	return n * Fact(n - 1);
+}
 
-	double Xn = 0;
-	for (int k = 2; k <= n; ++k) {
-		Xn = d * X1 + q * X0 + r;
-		//cout << Xn << endl;
-		X0 = X1;
-		X1 = Xn;
+double CalculateFor(int n) {
+	double result = 0;
+	for (int i = 1; i <= n; i += 2) {
+		result += 1 + (pow(-1, n) / Fact(2 * n + 1));
 	}
-
-	return Xn;
+	return result;
 }
 
 int main() {
-	setlocale(LC_ALL, "ru");
-	cout << "Реализация for" << endl;
-
-	double b = 2;
-	double c = 4;
-	double d = 5;
-	double q = 1;
-	double r = 7;
-	int n = 4;
-
-	if (n < 2) {
-		cout << "Error. n < 2" << endl;
-		return 1;
-	}
-
-	cout << "Функция вернула " << Calculate(b, c, d, q, r, n) << endl;
-	
-	char sol_continue;
-	while (true) {
-		cout << "Желаете посчитать еще раз? [y/n]" << endl;
-		cin >> sol_continue;
-		if (sol_continue == 'y') {
-			cout << "b = ";
-			cin >> b;
-			// тут нужно ввести остальные переменные заново
-			cout << "Функция вернула " << Calculate(b, c, d, q, r, n) << endl;
-		} else {
-			break;
-		}
-	}
+	int value = 0;
+	cin >> value;
+	cout << Fact(value) << endl;
 
 	return 0;
 }
