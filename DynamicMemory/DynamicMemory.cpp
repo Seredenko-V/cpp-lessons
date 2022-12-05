@@ -11,8 +11,8 @@ int main() {
     int stolb = 7;
 
     // выделили память под двумерный массив
-    int** arr = new int*[str];
-    for (int i = 0; i < stolb; ++i) {
+    int** arr = new int* [str];
+    for (int i = 0; i < str; ++i) {
         arr[i] = new int[stolb];
     }
 
@@ -28,6 +28,7 @@ int main() {
     for (int i = 0; i < str; ++i) {
         delete[] arr[i];
     }
+    delete[] arr;
 
     return 0;
 }
