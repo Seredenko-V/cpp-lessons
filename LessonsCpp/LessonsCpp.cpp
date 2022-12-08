@@ -1,53 +1,73 @@
 ﻿#include <iostream>
-#include  <cmath>
+#include <cmath>
 #include <cassert>
 
 using namespace std;
 
-int Fact(int n) {
-	if (n == 0 || n == 1) {
-		return 1;
-	}
-	int result = 1;
+int CalculateFor(int n, double epsion, double& value_An) {
+	int result_fact = 1; // значение факториала в знаменателе
+	int numerator_to_exponent = -1; // числитель в требуемой степени
+	double A_previous = 0; // предыдущее значение
+	double A_current = 1 - 1 / 6; // текущее значение
+
 	for (int i = 2; i <= n; ++i) {
-		result *= i;
-	}
-	return result;
-}
+		// если индекс нечетный, то -1 иначе 1
+		numerator_to_exponent = i % 2 ? -1 : 1;
+		
+		// вычисляется нужное значение факториала
+		int value_fact = 2 * i + 1;
+		result_fact *= value_fact - 1;
+		result_fact *= value_fact;
 
-double CalculateFor(int n, double epsion, int& number_element) {
-	// заменить pow и Fact. Включить Fact внутрь этой функции
-	double result = 0;
-	double An_minus_one = 0;
-	double An = 0;
-
-	int value_fact_minus_one = 1;
-	int value_fact = 2 * 1 + 1;
-
-	An = 1 + (pow(-1, 1) / value_fact);
-
-	for (int i = 1; i <= n; ++i) {
-
-		An_minus_one = (1 + (pow(-1, i - 1) / Fact(2 * (i - 1) + 1)));
-		An = (1 + (pow(-1, i) / Fact(2 * i + 1)));
-		result = abs(An - An_minus_one);
-		//cout << "result = " << An << " - " << An_minus_one << " = " << result << endl;
-		if (result < epsion) {
-			number_element = i;
-			break;
+		// проверка на условия выхода из цикла
+		if (abs(A_current - A_previous) < epsion) {
+			value_An = A_current;
+			return i;
 		}
+		
+		// приращение аргументов
+		A_previous = A_current;
+		A_current = 1 + numerator_to_exponent / static_cast<double>(result_fact);
 	}
-	return An;
+	return -1; // код ошибки, если не был найден нужный элемент
 }
 
 int main() {
-	/*int n = 15;
-	double epsilon = 8.23131e-9;
-	int pos = 0;
-	double value_An = CalculateFor(n, epsilon, pos);
-	cout << "An = " << value_An << endl;
-	cout << "pos = " << pos << endl;*/
+	setlocale(LC_ALL, "ru");
+	int n = 2;
+	double epsilon = 0;
+	double result = 0; // искомое значение
+	int pos = 0; // его позиция
+	bool perform_further = true;
 
-	assert(Fact(7) == 5040);
+	while (perform_further) {
+		cout << "n = "s;
+		cin >> n;
+		if (n < 2) {
+			cout << "Ошибка. n должно быть не меньше 2"s << endl;
+			continue;
+		}
+
+		cout << "epsilon = "s;
+		cin >> epsilon;
+		if (epsilon > 1 || epsilon <= 0) {
+			cout << "Ошибка. epsilon должно быть в пределах (0, 1]"s << endl;
+			continue;
+		}
+
+
+		pos = CalculateFor(n, epsilon, result);
+		if (pos < 0) {
+			cout << "Значение не было найдено. Нужно увеличить epsilon или n"s << endl;
+			continue;
+		}
+		cout << "Искомое начение: "s << result << endl;
+		cout << "Его номер: "s << pos << endl;
+
+		cout << "Повторить выполнение? [0 / 1]"s << endl;
+		cin >> perform_further;
+		cout << "======================================="s << endl;
+	}
+
 	return 0;
 }
