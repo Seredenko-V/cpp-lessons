@@ -1,6 +1,8 @@
 ﻿#include <iostream>
 #include <cmath>
-#include <cassert>
+
+#include "While.cpp"
+#include "DoWhile.cpp"
 
 using namespace std;
 
@@ -15,7 +17,7 @@ int CalculateFor(int n, double epsion, double& value_An) {
 		numerator_to_exponent = i % 2 ? -1 : 1;
 		
 		// вычисляется нужное значение факториала
-		int value_fact = 2 * i + 1;
+		int value_fact = 2 * i + 1; // знаменатель
 		result_fact *= value_fact - 1;
 		result_fact *= value_fact;
 
@@ -38,9 +40,9 @@ int main() {
 	double epsilon = 0;
 	double result = 0; // искомое значение
 	int pos = 0; // его позиция
-	bool perform_further = true;
+	char symbol = ' ';
 
-	while (perform_further) {
+	while (true) {
 		cout << "n = "s;
 		cin >> n;
 		if (n < 2) {
@@ -55,8 +57,28 @@ int main() {
 			continue;
 		}
 
+		cout << "Варианты действий:"s << endl;
+		cout << "f - реализация циклом for;"s << endl;
+		cout << "w - реализация циклом while;"s << endl;
+		cout << "d - реализация циклом do while;"s << endl;
+		cout << "любой другой символ - выход."s << endl;
+		cin >> symbol;
 
-		pos = CalculateFor(n, epsilon, result);
+		switch (symbol) {
+			case 'f':
+				pos = CalculateFor(n, epsilon, result);
+				break;
+			case 'w':
+				pos = CalculateWhile(n, epsilon, result);
+				break;
+			case 'd':
+				pos = CalculateDoWhile(n, epsilon, result);
+				break;
+			default:
+				return 0;
+				break;
+		}
+
 		if (pos < 0) {
 			cout << "Значение не было найдено. Нужно увеличить epsilon или n"s << endl;
 			continue;
@@ -64,8 +86,7 @@ int main() {
 		cout << "Искомое начение: "s << result << endl;
 		cout << "Его номер: "s << pos << endl;
 
-		cout << "Повторить выполнение? [0 / 1]"s << endl;
-		cin >> perform_further;
+		
 		cout << "======================================="s << endl;
 	}
 

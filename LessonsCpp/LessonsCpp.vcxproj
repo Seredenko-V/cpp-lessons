@@ -141,7 +141,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="LessonsCpp.cpp" />
-    <ClCompile Include="new_file.cpp" />
+    <ClCompile Include="DoWhile.cpp" />
+    <ClCompile Include="While.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
