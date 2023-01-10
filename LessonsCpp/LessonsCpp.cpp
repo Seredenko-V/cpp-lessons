@@ -1,67 +1,64 @@
-﻿/*******************************************************************************
-	Задание: написать функцию, которая разделяет слова одной строки и складывает
-	каждое слово в вектор (вектор строк). Слова разделяются только ОДНИМ пробелом,
-	без запятых, точек и т.д. Могут существовать слова, состоящие из одной буквы
-	Если строка пустая, то вектор тоже должен был пустым.
-*******************************************************************************/
+﻿// Задача В. Постфиксная запись
 
 #include <iostream>
-#include <cassert>
 #include <string>
-#include <vector>
+#include <cassert>
+#include <set>
+#include <stack>
+#include <cctype>
 
 using namespace std;
 
-// написать реализацию функции
-vector<string> ParseText(string text);
+int CalculatePostfixEntry(const string& input) {
+	stack<int> operands;
+	for (size_t i = 0; i < input.size(); ++i) {
+		if (input[i] == ' ') {
+			continue;
+		}
+
+		if (isdigit(input[i])) {
+			operands.push(input[i] - '0');
+		} else {
+			int rhs = operands.top();
+			operands.pop();
+			int lhs = operands.top();
+			operands.pop();
+
+			switch (input[i]) {
+				case '+':
+					operands.push(lhs + rhs);
+					break;
+				case '-':
+					operands.push(lhs - rhs);
+					break;
+				case '*':
+					operands.push(lhs * rhs);
+					break;
+				case '/':
+					operands.push(lhs / rhs);
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	return operands.top();
+}
 
 void Test() {
-	{
-		string text = "First"s;
-		vector<string> result = { "First"s };
-		assert(ParseText(text) == result);
-	}
-	{
-		string text = "Hello Google my name is Slava I am coder c++"s;
-		vector<string> result = {"Hello"s, "Google"s, "my"s, "name"s, "is"s, "Slava"s, "I"s, "am"s, "coder"s, "c++"s};
-		assert(ParseText(text) == result);
-	}
-	{
-		string text;
-		vector<string> result = ParseText(text);
-		assert(result.empty());
-	}
+	string text = "8 9 +"s;
+	assert(CalculatePostfixEntry(text) == 17);
+
+	text = "2 5 3 + 6 * +"s;
+	assert(CalculatePostfixEntry(text) == 50);
+
+	text = "8 2 5 * + 1 3 2 * + 4 - /"s;
+	assert(CalculatePostfixEntry(text) == 6);
+	cout << "All tests passed"s << endl;
 }
 
 int main() {
 	Test();
-	/* здесь должен рапологаться вызов функции разделения  и вывод вектора-результата */
-
-	// всё, что ниже - пример. В домашке его быть не должно (удалить).
-	vector<string> words;
-
-	string text = "Hello Google my name is Viktor I am coder c++"s;
-	for (size_t i = 0; i < text.size(); ++i) {
-		if (text[i] == ' ') {
-			cout << i << ' ';
-		}
-	}
-	cout << endl;
-
-	string accumulator;
-	cout << accumulator << endl;
-	accumulator += 's';
-	cout << accumulator << endl;
-	accumulator += text;
-	cout << accumulator << endl;
-	accumulator += 'K';
-	cout << accumulator << endl;
-	accumulator.push_back('B');
-	cout << accumulator << endl;
-	accumulator.clear();
-	cout << accumulator << endl;
-
-
 
 	return 0;
 }
