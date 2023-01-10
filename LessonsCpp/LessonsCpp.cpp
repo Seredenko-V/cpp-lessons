@@ -1,59 +1,37 @@
 ﻿// Задача В. Постфиксная запись
 
 #include <iostream>
-#include <string>
+#include <vector>
 #include <cassert>
-#include <set>
 #include <stack>
-#include <cctype>
 
 using namespace std;
 
-int CalculatePostfixEntry(const string& input) {
-	stack<int> operands;
-	for (size_t i = 0; i < input.size(); ++i) {
-		if (input[i] == ' ') {
-			continue;
+int FindMaxAreaRectangle(vector<int> histogram) {
+	histogram.push_back(0);
+	int result = 0;
+	stack<int> index_stack;
+	for (int i = 0; i < histogram.size(); ++i) {
+		while (!index_stack.empty() && histogram[i] < histogram[index_stack.top()]) {
+			int top = index_stack.top();
+			index_stack.pop();
+			int nextTop = index_stack.size() == 0 ? -1 : index_stack.top();
+			result = max((i - nextTop - 1) * histogram[top], result);
 		}
-
-		if (isdigit(input[i])) {
-			operands.push(input[i] - '0');
-		} else {
-			int rhs = operands.top();
-			operands.pop();
-			int lhs = operands.top();
-			operands.pop();
-
-			switch (input[i]) {
-				case '+':
-					operands.push(lhs + rhs);
-					break;
-				case '-':
-					operands.push(lhs - rhs);
-					break;
-				case '*':
-					operands.push(lhs * rhs);
-					break;
-				case '/':
-					operands.push(lhs / rhs);
-					break;
-				default:
-					break;
-			}
-		}
+		index_stack.push(i);
 	}
-	return operands.top();
+	return result;
 }
 
 void Test() {
-	string text = "8 9 +"s;
-	assert(CalculatePostfixEntry(text) == 17);
+	vector<int> values = { 2,1,4,5,1,3,3 };
+	assert(FindMaxAreaRectangle(values) == 8);
 
-	text = "2 5 3 + 6 * +"s;
-	assert(CalculatePostfixEntry(text) == 50);
+	values = { 2,1,2 };
+	assert(FindMaxAreaRectangle(values) == 3);
 
-	text = "8 2 5 * + 1 3 2 * + 4 - /"s;
-	assert(CalculatePostfixEntry(text) == 6);
+	values = { 0 };
+	assert(FindMaxAreaRectangle(values) == 0);
 	cout << "All tests passed"s << endl;
 }
 
