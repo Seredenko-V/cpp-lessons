@@ -1,42 +1,57 @@
-﻿// Задача В. Постфиксная запись
-
-#include <iostream>
-#include <vector>
+﻿#include <iostream>
 #include <cassert>
-#include <stack>
+#include <vector>
 
 using namespace std;
 
-int FindMaxAreaRectangle(vector<int> histogram) {
-	histogram.push_back(0);
-	int result = 0;
-	stack<int> index_stack;
-	for (int i = 0; i < histogram.size(); ++i) {
-		while (!index_stack.empty() && histogram[i] < histogram[index_stack.top()]) {
-			int top = index_stack.top();
-			index_stack.pop();
-			int nextTop = index_stack.size() == 0 ? -1 : index_stack.top();
-			result = max((i - nextTop - 1) * histogram[top], result);
-		}
-		index_stack.push(i);
-	}
-	return result;
+vector<vector<int>> ParseValue(const vector<int>& elements) {
+    vector<vector<int>> result;
+    if (elements.empty()) {
+        return result;
+    }
+    vector<int> box;
+
+    for (size_t i = 0; i < elements.size() - 1; ++i) {
+        box.push_back(elements[i]);
+        if (elements[i + 1] != elements[i]) {
+            result.push_back(box);
+            box.clear();
+        }
+    }
+    box.push_back(elements.back());
+    result.push_back(box);
+    return result;
 }
 
-void Test() {
-	vector<int> values = { 2,1,4,5,1,3,3 };
-	assert(FindMaxAreaRectangle(values) == 8);
-
-	values = { 2,1,2 };
-	assert(FindMaxAreaRectangle(values) == 3);
-
-	values = { 0 };
-	assert(FindMaxAreaRectangle(values) == 0);
-	cout << "All tests passed"s << endl;
+void Test()
+{
+    {
+        vector<int> elements = { 8,8,8,1,1,1,3 };
+        vector<vector<int>> etalon = { {8,8,8}, {1,1,1}, {3} };
+        assert(ParseValue(elements) == etalon);
+    }
+    {
+        vector<int> elements = { 8,1,3 };
+        vector<vector<int>> etalon = { {8}, {1}, {3} };
+        assert(ParseValue(elements) == etalon);
+    }
+    {
+        vector<int> elements = { 8,1,1,1,3,6,3,6,8,8 };
+        vector<vector<int>> etalon = { {8}, {1,1,1}, {3}, {6}, {3}, {6}, {8,8} };
+        assert(ParseValue(elements) == etalon);
+    }
+    {
+        vector<int> elements = { 5 };
+        vector<vector<int>> etalon = { {5} };
+        assert(ParseValue(elements) == etalon);
+    }
+    {
+        vector<int> elements;
+        assert(ParseValue(elements).empty());
+    }   
 }
 
 int main() {
-	Test();
-
-	return 0;
+    Test();
+    return 0;
 }
