@@ -4,17 +4,31 @@
 
 using namespace std;
 
+// Пузырьковая сортировка
 void Sort(vector<int>& elements) {
-    for (size_t i = 0; i < elements.size(); ++i) {
-        for (size_t j = i + 1; j < elements.size(); ++j) {
-            if (elements[j] < elements[i]) {
-                int tmp = elements[i];
-                elements[i] = elements[j];
-                elements[j] = tmp;
+    for (size_t i = 1; i < elements.size(); ++i) {
+        for (size_t j = 0; j < elements.size() - i; ++j) {
+            if (elements[j] > elements[j + 1]) {
+                int tmp = elements[j];
+                elements[j] = elements[j + 1];
+                elements[j + 1] = tmp;
             }
         }
     }
 }
+
+// Сортировка выбором
+//void Sort(vector<int>& elements) {
+//    for (size_t i = 0; i < elements.size(); ++i) {
+//        for (size_t j = i + 1; j < elements.size(); ++j) {
+//            if (elements[j] < elements[i]) {
+//                int tmp = elements[i];
+//                elements[i] = elements[j];
+//                elements[j] = tmp;
+//            }
+//        }
+//    }
+//}
 
 void Tests() {
     {
