@@ -1,24 +1,34 @@
 ﻿#include <iostream>
-#include <string>
-#include <map>
 
 using namespace std;
 
 int main() {
+    int a = 4;
+    cout << "a = " << a << endl;
+    cout << "&a = " << &a << endl;
 
-    map<string, string> test_input = { {"cat"s, "meow"s},
-                                       {"dog"s, "bark"s},
-                                       {"cow"s, "moo"s},
-                                       {"owl"s, "hoot"s},
-                                       {"tiger"s, "roar"s} };
+    // ==================== указатель ===================
+    cout << "==================== указатель ===================" << endl;
+    int* ptr_a = &a;
+    cout << "ptr_a = " << ptr_a << endl;
 
-    map<string, string> test_output = { {"bark"s, "dog"s},
-                                        {"hoot"s, "owl"s},
-                                        {"meow"s, "cat"s},
-                                        {"moo"s, "cow"s},
-                                        {"roar"s, "tiger"s} };
-    /* Необходимо поменять ключи и значения местами. 
-    test_input - исходный map
-    test_output - результат замены */
+    int** ptr2_a = &ptr_a;
+    cout << "ptr2_a = " << ptr2_a << endl;
+    cout << "&ptr2_a = " << &ptr2_a << endl;
+
+    // разыменование
+    cout << "**ptr2_a = " << **ptr2_a << endl;
+    **ptr2_a = 9;
+
+    cout << "a = " << a << endl;
+
+    // ==================== ссылка ===================
+    cout << "==================== ссылка ===================" << endl;
+    int& ref_a = a;
+    cout << "ref_a = " << ref_a << endl;
+    cout << "&ref_a = " << &ref_a << endl;
+    ref_a = 2;
+    cout << "a = " << a << endl;
+
     return 0;
 }
