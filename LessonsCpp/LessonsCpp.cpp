@@ -1,61 +1,44 @@
-﻿#include <chrono>
-#include <iostream>
-#include <cassert>
+﻿#include <iostream>
 #include <vector>
-#include <numeric>
+#include <string>
+#include <sstream>
+#include <fstream>
+#include <cassert>
 
 using namespace std;
 
-class LogDuration {
-public:
-    using Clock = std::chrono::steady_clock;
-
-    LogDuration(const std::string name_block, std::ostream& output = std::cerr)
-        : name_block_(name_block) {
+// out - куда, text - что
+void WriteToStream(ostream& out, const vector<string>& text) {
+    for (const string& str : text) {
+        out << str << endl;
     }
-
-    ~LogDuration() {
-        using namespace std::chrono;
-        using namespace std::literals;
-
-        const auto end_time = Clock::now();
-        const auto dur = end_time - start_time_;
-        std::cerr << name_block_ << ": "s << duration_cast<milliseconds>(dur).count() << " ms"s << std::endl;
-    }
-
-private:
-    const Clock::time_point start_time_ = Clock::now();
-    const std::string name_block_;
-};
-
-double AverageCopy(vector<double> elements) {
-    double result = 0.0;
-    for (const double& value : elements) {
-        result += value;
-    }
-    return result /= elements.size();
 }
 
-double AverageRef(const vector<double>& elements) {
-    double result = 0.0;
-    for (const double& value : elements) {
-        result += value;
+void WriteToFile(const string& name_file, const vector<string>& text) {
+    ofstream fout(name_file);
+    WriteToStream(fout, text);
+    fout.close();
+}
+
+void Test() {
+    {
+        vector<string> text = { "Hello mtischi"s, "I am Viktor"s, "I from is Dragunka"s };
+        string only_string;
+        for (const string& str : text) {
+            only_string += (str + '\n');
+        }
+        stringstream etalon;
+        WriteToStream(etalon, text);
+        assert(etalon.str() == only_string);
     }
-    return result /= elements.size();
 }
 
 int main() {
-    const size_t size = 10000000;
-    vector<double> test(size);
-    iota(test.begin(), test.end(), 1);
-    {
-        LogDuration timer("Copy");
-        cout << AverageCopy(test) << endl;
-    }
-    {
-        LogDuration timer("NO copy");
-        cout << AverageRef(test) << endl;
-    }
+    Test();
 
+    string name_file = "MyFile.txt"s;
+    vector<string> text = { "Hello mtischi"s, "I am Viktor"s, "I from is Dragunka"s };
+
+    WriteToFile(name_file, text);
     return 0;
 }
