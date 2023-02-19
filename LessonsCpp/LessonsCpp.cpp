@@ -1,44 +1,32 @@
-﻿#include <iostream>
-#include <vector>
+﻿#include <algorithm>
+#include <iostream>
+#include <set>
 #include <string>
-#include <sstream>
-#include <fstream>
-#include <cassert>
+#include <vector>
+#include <iterator>
 
 using namespace std;
 
-// out - куда, text - что
-void WriteToStream(ostream& out, const vector<string>& text) {
-    for (const string& str : text) {
-        out << str << endl;
+template <typename It>
+void PrintRange(It range_begin, It range_end) {
+    for (auto it = range_begin; it != range_end; ++it) {
+        cout << *it << " "s;
     }
+    cout << endl;
 }
 
-void WriteToFile(const string& name_file, const vector<string>& text) {
-    ofstream fout(name_file);
-    WriteToStream(fout, text);
-    fout.close();
+template <typename It>
+set<typename iterator_traits<It>::value_type> MakeSet(It range_begin, It range_end) {
+    return set<typename iterator_traits<It>::value_type>(range_begin, range_end);
 }
 
-void Test() {
-    {
-        vector<string> text = { "Hello mtischi"s, "I am Viktor"s, "I from is Dragunka"s };
-        string only_string;
-        for (const string& str : text) {
-            only_string += (str + '\n');
-        }
-        stringstream etalon;
-        WriteToStream(etalon, text);
-        assert(etalon.str() == only_string);
-    }
-}
+//template <typename It>
+//auto MakeSet(It range_begin, It range_end) {
+//    return set(range_begin, range_end);
+//}
 
 int main() {
-    Test();
-
-    string name_file = "MyFile.txt"s;
-    vector<string> text = { "Hello mtischi"s, "I am Viktor"s, "I from is Dragunka"s };
-
-    WriteToFile(name_file, text);
-    return 0;
+    vector<string> langs = { "Python"s, "Java"s, "C#"s, "Ruby"s, "C++"s, "C++"s, "C++"s, "Ruby"s, "Java"s };
+    set<string> unique_langs = MakeSet(langs.begin(), langs.end());
+    PrintRange(unique_langs.begin(), unique_langs.end());
 }
