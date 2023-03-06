@@ -1,60 +1,52 @@
 ﻿#include <iostream>
+#include <vector>
+#include <string>
 
 using namespace std;
 
-template <typename Type>
-Type** MemoryAllocationTwoDimensionalArr(int str, int col, Type default_value = 0) {
-    Type** arr = new Type* [str];
-    for (int i = 0; i < str; ++i) {
-        arr[i] = new Type[col];
-        // заполнение значениями по умолчанию
-        for (int j = 0; j < col; ++j) {
-            arr[i][j] = default_value;
-        }
-    }
-    return arr;
-}
+class People {
+public:
+	People() {
+		cout << "Constructor default"s << endl;
+	}
 
-template <typename Type>
-void FreeMemoryTwoDimensionalArr(Type** arr, int str) {
-    for (int i = 0; i < str; ++i) {
-        delete[] arr[i];
-    }
-    delete[] arr;
-}
+	People(int age) {
+		cout << "Constructor 1"s << endl;
+		age_ = age;
+		if (age >= 18) {
+			adult_ = true;
+		}
+	}
 
-template <typename Type>
-void PrintTwoDimensionalArr(Type** arr, int str, int col) {
-    for (int i = 0; i < str; ++i) {
-        for (int j = 0; j < col; ++j) {
-            cout << arr[i][j] << ' ';
-        }
-        cout << endl;
-    }
-}
+	People(int age, const string& name) {
+		cout << "Constructor 2"s << endl;
+		age_ = age;
+		if (age >= 18) {
+			adult_ = true;
+		}
+		name_ = name;
+	}
+
+	bool IsAbult() const {
+		return adult_;
+	}
+
+	~People() {
+		cout << "Destructor"s << endl;
+	}
+private:
+	int age_ = 0;
+	bool adult_ = false;
+	string name_ = "no name"s;
+};
 
 int main() {
-    int num_str = 8;
-    int num_col = 7;
-    {
-        // при вызове функции указываем тип данных, передаваемых в шаблон
-        double** arr = MemoryAllocationTwoDimensionalArr<double>(num_str, num_col, 0.5);
-        PrintTwoDimensionalArr(arr, num_str, num_col);
-        FreeMemoryTwoDimensionalArr(arr, num_str);
-    }
-    cout << endl;
-    {
-        // при вызове функции указываем тип данных, передаваемых в шаблон
-        int** arr = MemoryAllocationTwoDimensionalArr<int>(num_str, num_col);
-        PrintTwoDimensionalArr(arr, num_str, num_col);
-        FreeMemoryTwoDimensionalArr(arr, num_str);
-    }
-    cout << endl;
-    {
-        // при вызове функции указываем тип данных, передаваемых в шаблон
-        char** arr = MemoryAllocationTwoDimensionalArr<char>(num_str, num_col, 'a');
-        PrintTwoDimensionalArr(arr, num_str, num_col);
-        FreeMemoryTwoDimensionalArr(arr, num_str);
-    }
-    return 0;
+	People first(20, "Petr"s);
+	if (first.IsAbult()) {
+		cout << "IsAbult"s << endl;
+	} else {
+		cout << "Baby"s << endl;
+	}
+
+	return 0;
 }
