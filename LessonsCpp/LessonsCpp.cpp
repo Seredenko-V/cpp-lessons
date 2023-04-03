@@ -1,68 +1,62 @@
-﻿#include <iostream>
+﻿// Нужно собрать рюкзак максимально возможной стоимости с учетом грузоподъемности
+
+#include <iostream>
+#include <string>
 #include <vector>
-#include <cassert>
 
 using namespace std;
 
+struct Object {
+    string name;
+    int cost = 0;
+    int weight = 0;
+};
 
-// Поиск ПОДпоследовательности, начинающейся с минимального элемента принимаемой послед-ти
-// Длина подпослед-тей не сравнивается. Находится подпослед. с первого минимального элемента
-// т.е. { 9,2,35,2,6,7,2 } -> { 2,35 }
-vector<int> FindIncreaseSequenceWithMinimumStart(const vector<int>& seq) {
-    vector<int> increase;
-    increase.reserve(seq.size());
-    increase.push_back(seq.front());
-    bool is_new_seq = false;
-    for (int i = 1; i < seq.size(); ++i) {
-        if (seq[i] <= seq[i - 1]) {
-            is_new_seq = true;
-            if (increase.front() > seq[i]) {
-                increase.clear();
-                is_new_seq = false;
+struct Backpack {
+    vector<Object> objects;
+    int cost = 0;
+    int weight = 0;
+};
+
+Backpack PackBackpack(int max_weight, const vector<Object>& objects) {
+    // + 1 чтобы заполнить первую строку и первый столбец нулями для поиска максимума
+    vector<vector<int>> table(objects.size() + 1, vector<int>(max_weight + 1));
+    for (size_t i = 1; i <= objects.size(); ++i) {
+        for (size_t j = 1; j <= max_weight; ++j) {
+            // первый объект просто кладем в рюкзак, если помещается
+            if (i == 1) {
+                if (objects[i - 1].weight <= j) {
+                    table[i][j] = objects[i - 1].cost;
+                }
+            } else {
+                // максимальная стоимость рюкзака для текущей грузоподъемности на предыдущем шаге
+                int old_max_cost = table[i - 1][j];
+                if (objects[i - 1].weight <= j) {
+                    // максимальная стоимость рюкзака для текущей грузоподъемности на текущем шаге
+                    int new_max_cost = objects[i - 1].cost + table[i - 1][j - objects[i - 1].weight];
+                    table[i][j] = max(old_max_cost, new_max_cost);
+                } else {
+                    table[i][j] = old_max_cost;
+                }
             }
+            cout << table[i][j] << ' ';
         }
-        if (!is_new_seq) {
-            increase.push_back(seq[i]);
-        }
+        cout << endl;
     }
-    return increase;
+
+    return {};
 }
-
-void Test() {
-    vector<int> sequence{ 3,10,60, 5,10,60 };
-    vector<int> result = FindIncreaseSequenceWithMinimumStart(sequence);
-    vector<int> etalon{ 3,10,60 };
-    assert(result == etalon);
-
-    sequence = { 3,10,60, 1,10,60 };
-    result = FindIncreaseSequenceWithMinimumStart(sequence);
-    etalon = { 1,10,60 };
-    assert(result == etalon);
-
-    sequence = { 3,10,60, 5,10,60, 1,10,60};
-    result = FindIncreaseSequenceWithMinimumStart(sequence);
-    etalon = { 1,10,60 };
-    assert(result == etalon);
-
-    sequence = { 1,1,1,1,1 };
-    result = FindIncreaseSequenceWithMinimumStart(sequence);
-    etalon = { 1 };
-    assert(result == etalon);
-
-    sequence = { 9,2,35,2,6,7,2 };
-    result = FindIncreaseSequenceWithMinimumStart(sequence);
-    etalon = { 2,35 };
-    assert(result == etalon);
-
-    //for (int v : result) {
-    //    cout << v << ' ';
-    //}
-    cout << "Tests is ok"s << endl;
-}
-
 
 int main() {
-    Test();
+    int max_weight = 4; // макс. вес, который может выдержать рюкзак
+    vector<Object> all_objects{
+        {"laptop"s, 2000, 3},
+        {"chainsaw"s, 3000, 4}, 
+        {"guitar"s, 1500, 1}
+        
+    };
 
-	return 0;
+    PackBackpack(max_weight, all_objects);
+
+    return 0;
 }
