@@ -1,62 +1,50 @@
-﻿// Нужно собрать рюкзак максимально возможной стоимости с учетом грузоподъемности
-
-#include <iostream>
-#include <string>
+﻿#include <iostream>
+#include <cassert>
 #include <vector>
 
 using namespace std;
 
-struct Object {
-    string name;
-    int cost = 0;
-    int weight = 0;
-};
+ostream& operator<<(ostream& out, const vector<int>& vec) {
+	for (int value : vec) {
+		out << value << ' ';
+	}
+	return out;
+}
 
-struct Backpack {
-    vector<Object> objects;
-    int cost = 0;
-    int weight = 0;
-};
+void Reverse(vector<int>& elements) {
+	size_t size = elements.size();
+	for (size_t i = 0; i < size / 2; ++i) {
+		int tmp = elements[i];
+		elements[i] = elements[size - 1 - i];
+		elements[size - 1 - i] = tmp;
+	}
+}
 
-Backpack PackBackpack(int max_weight, const vector<Object>& objects) {
-    // + 1 чтобы заполнить первую строку и первый столбец нулями для поиска максимума
-    vector<vector<int>> table(objects.size() + 1, vector<int>(max_weight + 1));
-    for (size_t i = 1; i <= objects.size(); ++i) {
-        for (size_t j = 1; j <= max_weight; ++j) {
-            // первый объект просто кладем в рюкзак, если помещается
-            if (i == 1) {
-                if (objects[i - 1].weight <= j) {
-                    table[i][j] = objects[i - 1].cost;
-                }
-            } else {
-                // максимальная стоимость рюкзака для текущей грузоподъемности на предыдущем шаге
-                int old_max_cost = table[i - 1][j];
-                if (objects[i - 1].weight <= j) {
-                    // максимальная стоимость рюкзака для текущей грузоподъемности на текущем шаге
-                    int new_max_cost = objects[i - 1].cost + table[i - 1][j - objects[i - 1].weight];
-                    table[i][j] = max(old_max_cost, new_max_cost);
-                } else {
-                    table[i][j] = old_max_cost;
-                }
-            }
-            cout << table[i][j] << ' ';
-        }
-        cout << endl;
-    }
-
-    return {};
+void Test() {
+	{
+		vector<int> etalon{ -3, 5, 9, 0, 6, 8, 4, 1 };
+		vector<int> elements = etalon;
+		vector<int> reverse_elem{ 1,4,8,6,0,9,5,-3 };
+		Reverse(elements);
+		assert(elements == reverse_elem);
+		Reverse(elements);
+		assert(elements == etalon);
+	}
+	{
+		vector<int> elements{ 1,2,3,4,5 };
+		vector<int> reverse_elem{ 5,4,3,2,1 };
+		Reverse(elements);
+		assert(elements == reverse_elem);
+	}
+	{
+		vector<int> elements{ 1,1,1,1,1,1,1 };
+		vector<int> reverse_elem = elements;
+		Reverse(elements);
+		assert(elements == reverse_elem);
+	}
 }
 
 int main() {
-    int max_weight = 4; // макс. вес, который может выдержать рюкзак
-    vector<Object> all_objects{
-        {"laptop"s, 2000, 3},
-        {"chainsaw"s, 3000, 4}, 
-        {"guitar"s, 1500, 1}
-        
-    };
-
-    PackBackpack(max_weight, all_objects);
-
-    return 0;
+	Test();
+	return 0;
 }
