@@ -5,237 +5,285 @@
 
 using namespace std;
 
-/// ЛР02. Линейные и циклические списка. Вариант 11
+/// ЛР03. Стек и очередь. Вариант 11. Задача 3
+/// Стек – динамический; очередь – статическая
 
-struct LinearList {
-    int coeff;
-    LinearList* next;
-    LinearList* prev;
+struct Task {
+    uint16_t priority;
+    uint16_t task_time;
+    uint16_t duration_time;
 };
 
-void AddListElem(LinearList*& node, int new_list_elem) {
-    LinearList* new_elem = new LinearList;
-    new_elem->next = nullptr;
+ostream& operator<<(ostream& out, Task task) {
+    out << "Priority task = "s << task.priority << "; Task time = "s << task.task_time
+        << "; Duration time = "s << task.duration_time << ".\n";
+    return out;
+}
+
+// Для удобства работы с несколькими СТАТИЧЕСКИМИ очередями
+struct Queue {
+    int capacity = 0;
+    int current_pos = 0;
+    int priority = 1;
+    Task* data;
+
+    // Добавить элемент в конец очереди. Возвращает индекс куда будет добавлена новая задача
+    int PushBack(Task task) {
+        assert(capacity > current_pos);
+        data[current_pos++] = task;
+        return current_pos;
+    }
+
+    // Удалить элемент из начала очереди. Возвращает индекс куда будет добавлена новая задача
+    int PopFront() {
+        if (current_pos == 0) {
+            return current_pos;
+        }
+        --current_pos;
+        for (int i = 0; i < current_pos; ++i) {
+            data[i] = data[i + 1];
+        }
+        return current_pos;
+    }
+
+    // Вывести содержимое очереди
+    void Print(ostream& out = cout) {
+        for (int i = 0; i < current_pos; ++ i) {
+            out << data[i];
+        }
+    }
+};
+
+// Определить в какую очередь положить задачу
+void DefineQueueForTask(Task task, Queue& first, Queue& second, Queue& third) {
+    if (task.priority == first.priority) {
+        first.PushBack(task);
+    } else if (task.priority == second.priority) {
+        second.PushBack(task);
+    } else {
+        third.PushBack(task);
+    }
+}
+
+struct Stack {
+    Task* task_values = nullptr;
+    Stack* prev = nullptr;
+};
+
+
+ostream& operator<<(ostream& out, Stack* stack) {
+    if (stack == nullptr) {
+        out << "Stack is empty.\n"s;
+        return out;
+    }
+    while (stack->prev != nullptr) {
+        out << *stack->task_values;
+        stack = stack->prev;
+    }
+    out << *stack->task_values;
+    return out;
+}
+
+void AddStackElem(Stack*& node, uint16_t priority, uint16_t task_time, uint16_t duration_time) {
+    Task* task = new Task;
+    task->priority = priority;
+    task->task_time = task_time;
+    task->duration_time = duration_time;
+
+    Stack* new_elem = new Stack;
     new_elem->prev = nullptr;
-    new_elem->coeff = new_list_elem;
+    new_elem->task_values = task;
     if (node == nullptr) {
         node = new_elem;
     } else {
-        LinearList* tmp = node;
-        new_elem->prev = tmp;
-        while (tmp->next != nullptr) {
-            tmp = tmp->next;
-            new_elem->prev = tmp;
-        }
-        tmp->next = new_elem;
+        new_elem->prev = node;
+        node = new_elem;
     }
 }
 
-// Освобождение памяти, выделенной для элементов списка
-void ClearList(LinearList*& node) {
+void PopStackElem(Stack*& node) {
     if (node == nullptr) {
         return;
     }
-    while (node->next != nullptr) {
-        LinearList* tmp = node->next;
+    if (node->prev == nullptr) {
         delete node;
-        node = tmp;
+        node = nullptr;
+        return;
     }
-    delete node;
-    node = nullptr;
+    Stack* tmp = node;
+    node = node->prev;
+    delete tmp;
 }
 
-// Вывод последовательности в прямом направлении, начиная с node
-void PrintForwardSequence(const LinearList* node, ostream& out = cout) {
-    if (node == nullptr) {
-        out << "There isn't forward sequence.\n"s;
-        return;
+void ClearStack(Stack*& node) {
+    while(node != nullptr) {
+        PopStackElem(node);
     }
-    while (node->next != nullptr) {
-        out << node->coeff << ' ';
-        node = node->next;
-    }
-    out << node->coeff << '\n';
-}
-
-// Вывод последовательности в обратном направлении, начиная с node
-void PrintReverseSequence(const LinearList* node, ostream& out = cout) {
-    if (node == nullptr) {
-        out << "There isn't reverse sequence.\n"s;
-        return;
-    }
-    while (node->prev != nullptr) {
-        out << node->coeff << ' ';
-        node = node->prev;
-    }
-    out << node->coeff << '\n';
-}
-
-// ОСНОВНАЯ ФУНКЦИЯ
-void FindTwoSequences(LinearList*& list, int pivot_element, ostream& out = cout) {
-    if (list == nullptr) {
-        out << "List is empty.\n"s;
-        return;
-    }
-    const LinearList* pos_pivot_element = list;
-    while (pos_pivot_element->coeff != pivot_element && pos_pivot_element->next != nullptr) {
-        pos_pivot_element = pos_pivot_element->next;
-    }
-    if (pos_pivot_element->coeff != pivot_element) {
-        out << pivot_element << " there isn't at list.\n"s;
-        return;
-    }
-    if (pos_pivot_element->next == nullptr && pos_pivot_element->prev == nullptr) {
-        out << "The list contains only one item.\n"s;
-        return;
-    }
-
-    const LinearList* reverse = pos_pivot_element->prev;
-    const LinearList* forward = pos_pivot_element->next;
-
-    // вывод первой
-    out << "Reverse sequence: "s;
-    PrintReverseSequence(reverse, out);
-
-    // вывод второй
-    out << "Forward sequence: "s;
-    PrintForwardSequence(forward, out);
 }
 
 // =========================== НАЧАЛО ТЕСТОВ, ПРОВЕРЯЮЩИХ КОРРЕКТНОСТЬ РАБОТЫ ===========================>
-// Когда список пустой
-void TestEmptyList() {
-    LinearList* list = nullptr;
-    ostringstream out;
-    string expected_print = "List is empty.\n"s;
-    FindTwoSequences(list, 5, out);
-    assert(out.str() == expected_print);
-    ClearList(list);
-    cerr << "TestEmptyList has passed\n"s;
-}
 
-// Когда искомого числа нет в списке
-void TestAbsenceNumberInSequence() {
-    LinearList* list = nullptr;
-    ostringstream out;
-    constexpr int kFindNumber = 7; // любое нечетное число
-    string expected_print = to_string(kFindNumber) + " there isn't at list.\n"s;
-    for (int i = 0; i < 15; i += 2) {
-        AddListElem(list, i);
-    }
-    FindTwoSequences(list, kFindNumber, out);
-    assert(out.str() == expected_print);
-    ClearList(list);
-    cerr << "TestAbsenceNumberInSequence has passed\n"s;
-}
+void TestDefineQueueForTask() {
+    constexpr int kCapacity = 10;
+    Task first_tasks[kCapacity];
+    Queue first{kCapacity, 0, 1, first_tasks};
 
-// Когда список состоит из одного элемента
-void TestListWithOneElement() {
-    LinearList* list = nullptr;
-    ostringstream out;
-    constexpr int kFindNumber = 42; // любое число
-    string expected_print = "The list contains only one item.\n"s;
-    AddListElem(list, kFindNumber);
-    FindTwoSequences(list, kFindNumber, out);
-    assert(out.str() == expected_print);
-    ClearList(list);
-    cerr << "TestListWithOneElement has passed\n"s;
-}
+    Task second_tasks[kCapacity];
+    Queue second{kCapacity, 0, 2, second_tasks};
 
-// Существует только обратная последовательность
-void TestOnlyReverseSequence() {
-    LinearList* list = nullptr;
-    ostringstream out;
-    for (int i = 0; i < 10; ++i) {
-        AddListElem(list, i);
-    }
-    FindTwoSequences(list, 9, out);
-    ostringstream expected_out {
-        "Reverse sequence: 8 7 6 5 4 3 2 1 0\n"s
-        "Forward sequence: There isn't forward sequence.\n"s
+    Task third_tasks[kCapacity];
+    Queue third{kCapacity, 0, 3, third_tasks};
+
+    constexpr int kNumTestTasks = 5;
+    Task test_tasks[kNumTestTasks]{
+        {2, 3, 6},
+        {1, 2, 7},
+        {3, 23, 4126},
+        {3, 5, 1},
+        {1, 2, 2}
     };
-    assert(out.str() == expected_out.str());
-    ClearList(list);
-    cerr << "TestOnlyReverseSequence has passed\n"s;
+    for (int i = 0; i < kNumTestTasks; ++i) {
+        DefineQueueForTask(test_tasks[i], first, second, third);
+    }
+    assert(first.current_pos == 2);
+    assert(second.current_pos == 1);
+    assert(third.current_pos == 2);
+    cerr << "TestDefineQueueForTask has passed\n"s;
 }
 
-// Существует только прямая последовательность
-void TestOnlyForwardSequence() {
-    LinearList* list = nullptr;
-    ostringstream out;
-    for (int i = 0; i < 10; ++i) {
-        AddListElem(list, i);
+void TestPushPopStack() {
+    Stack* stack = nullptr;
+    AddStackElem(stack, 5, 4, 6);
+    AddStackElem(stack, 45, 12, 9);
+    AddStackElem(stack, 2, 213, 9);
+    { // Вывод должен быть в обратном порядке добавлению
+        ostringstream expected_out{
+            "Priority task = 2; Task time = 213; Duration time = 9.\n"s
+            "Priority task = 45; Task time = 12; Duration time = 9.\n"s
+            "Priority task = 5; Task time = 4; Duration time = 6.\n"s
+        };
+        ostringstream out;
+        out << stack;
+        assert(out.str() == expected_out.str());
+    }{ // удаляем последний добавленный элемент
+        ostringstream expected_out{
+            "Priority task = 45; Task time = 12; Duration time = 9.\n"s
+            "Priority task = 5; Task time = 4; Duration time = 6.\n"s
+        };
+        ostringstream out;
+        PopStackElem(stack);
+        out << stack;
+        assert(out.str() == expected_out.str());
+    }{ // удаляем все остальные элементы
+        ostringstream expected_out{
+            "Stack is empty.\n"s
+        };
+        ostringstream out;
+        PopStackElem(stack);
+        PopStackElem(stack);
+        out << stack;
+        assert(out.str() == expected_out.str());
+    }{ // удаление элементов из пустого стека
+        ostringstream expected_out{
+            "Stack is empty.\n"s
+        };
+        ostringstream out;
+        for (int i = 0; i < 10; ++i) {
+            PopStackElem(stack);
+        }
+        out << stack;
+        assert(out.str() == expected_out.str());
     }
-    FindTwoSequences(list, 0, out);
-    ostringstream expected_out {
-        "Reverse sequence: There isn't reverse sequence.\n"s
-        "Forward sequence: 1 2 3 4 5 6 7 8 9\n"s
-    };
-    assert(out.str() == expected_out.str());
-    ClearList(list);
-    cerr << "TestOnlyForwardSequence has passed\n"s;
-}
-
-// Обе последовательности существуют
-void TestThereIsTwoSequences() {
-    LinearList* list = nullptr;
-    ostringstream out;
-    for (int i = 0; i < 10; ++i) {
-        AddListElem(list, i);
-    }
-    FindTwoSequences(list, 5, out);
-    ostringstream expected_out {
-        "Reverse sequence: 4 3 2 1 0\n"s
-        "Forward sequence: 6 7 8 9\n"s
-    };
-    assert(out.str() == expected_out.str());
-    ClearList(list);
-    cerr << "TestThereIsTwoSequences has passed\n"s;
+    cerr << "TestPushPopStack has passed\n"s;
 }
 
 void RunAllTests() {
-    TestEmptyList();
-    TestAbsenceNumberInSequence();
-    TestListWithOneElement();
-    TestOnlyReverseSequence();
-    TestOnlyForwardSequence();
-    TestThereIsTwoSequences();
+    TestDefineQueueForTask();
+    TestPushPopStack();
     cerr << ">>> AllTests has passed <<<\n"s;
     cerr << "===========================\n"s;
 }
 
 // <=========================== КОНЕЦ ТЕСТОВ, ПРОВЕРЯЮЩИХ КОРРЕКТНОСТЬ РАБОТЫ ===========================
 
-void Example() {
-    static int count = 1;
-    cout << "Run example "s << count++ << "...\n"s;
-    cout << "Enter size list: "s;
-    int size = 0;
-    cin >> size;
-    LinearList* list = nullptr;
-    for (int i = 0; i < size; ++i) {
-        cout << "List["s << i << "] = "s;
-        int value = 0;
-        cin >> value;
-        AddListElem(list, value);
-    }
-    cout << "List elements:\n"s;
-    PrintForwardSequence(list);
 
-    cout << "Enter find element: "s;
-    int find_element = 0;
-    cin >> find_element;
-    FindTwoSequences(list, find_element);
-    ClearList(list);
-}
+/*void processorLoop(TaskList *&IncomingTask) {
+    TaskList *Stack = NULL;
+    TaskList *Queue = NULL;
+    Task *OurProcessor = new Task;
+    OurProcessor->priority = 0;
+    OurProcessor->duration_time = 0;
+    bool emptyQueue = true; //Проверка пустоты Очереди
+    bool emptyStack = true; //Проверка пустоты Стека
+    bool processorIsFree = true; //Проверка занятости процессора
+    bool allTasksGone = false;
+    int timer = 1;
+    while(true) {
+        if (!allTasksGone) {
+            if (IncomingTask->task_values->task_time == timer) {
+                pushToQueue(IncomingTask, Queue, emptyQueue, allTasksGone);
+            }
+        }
+        if (!emptyQueue) {
+            if (Queue->task_values->priority > OurProcessor->priority || processorIsFree) {
+                if (OurProcessor->duration_time > 0) {
+                    pushToStack(Stack, OurProcessor, emptyStack, processorIsFree);
+                }
+                getFromQueue(Queue, OurProcessor, emptyQueue, processorIsFree);
+                while (true){
+                    if (!emptyQueue) {
+                        if (Queue->task_values->priority > OurProcessor->priority) {
+                            pushToStack(Stack, OurProcessor, emptyStack, processorIsFree);
+                            getFromQueue(Queue, OurProcessor, emptyQueue, processorIsFree);
+                        }
+                        else
+                        break;
+                    }
+                    else
+                    break;
+                }
+            }
+        } else if (!emptyStack) {
+            if (processorIsFree)
+            getFromStack(Stack, OurProcessor, emptyStack, processorIsFree);
+        }
+        cout << endl << “Идет “ << timer << “ такт” << endl;
+        if (!allTasksGone) {
+            cout << “Входные задания” << endl;
+            showStruct(IncomingTask);
+        }
+        if (!emptyStack) {
+            cout << “Содержимое стэка” << endl;
+            showStruct(Stack);
+        }
+        if (!emptyQueue) {
+            cout << “Содержимое очереди” << endl;
+            showStruct(Queue);
+        }
+        if (!processorIsFree) {
+            cout << “Содержимое процессора” << endl;
+            showStructElem(OurProcessor);
+        } else {
+            cout << «Процессор свободен» << endl;
+        }
+        if (!processorIsFree) {
+            if (OurProcessor->duration_time) {
+                OurProcessor->duration_time--;
+            }
+            if(OurProcessor->duration_time<=0) {
+                OurProcessor->duration_time = 0;
+                OurProcessor->priority = 0;
+                processorIsFree = true;
+            }
+        }
+        timer++;
+        if (emptyStack && emptyQueue && processorIsFree && allTasksGone)
+        break;
+    }
+    IncomingTask=NULL;
+} */
 
 int main() {
     RunAllTests();
-    char answer = 'y';
-    while (answer == 'y') {
-        Example();
-        cout << "Do run example again? [y/n]\n"s;
-        cin >> answer;
-    }
     return 0;
 }
