@@ -24,7 +24,7 @@ ostream& operator<<(ostream& out, Task task) {
 struct Queue {
     int capacity = 0;
     int current_pos = 0;
-    int priority = 1;
+    int priority = 0;
     Task* data;
 
     // Добавить элемент в конец очереди. Возвращает индекс куда будет добавлена новая задача
@@ -47,10 +47,20 @@ struct Queue {
     }
 
     // Вывести содержимое очереди
-    void Print(ostream& out = cout) {
+    void Print(ostream& out = cout) const noexcept {
+        if (IsEmpty()) {
+            out << "Queue is empty.\n"s;
+            return;
+        }
         for (int i = 0; i < current_pos; ++ i) {
             out << data[i];
         }
+    }
+
+    // Пуста ли очередь
+    bool IsEmpty() const noexcept {
+        assert(current_pos >= 0);
+        return !current_pos;
     }
 };
 
@@ -120,6 +130,78 @@ void ClearStack(Stack*& node) {
         PopStackElem(node);
     }
 }
+
+struct Processor {
+    Task current_task;
+    Queue& high; // высокий
+    Queue& medium; // средний
+    Queue& low; // низкий
+    Stack*& stack;
+    int timer = 1;
+
+    bool AllQueueIsEmpty() const noexcept {
+        return high.IsEmpty() && medium.IsEmpty() && low.IsEmpty();
+    }
+
+    bool IsEmpty() const noexcept {
+        return current_task.duration_time == 0 && AllQueueIsEmpty() && stack == nullptr;
+    }
+
+    // Положить на стек текущую задачу если она не завершена и взять более приоритетную
+    void AddCurrentTaskToStackAndTakeNewTask(Queue& queue) {
+        if (current_task.duration_time != 0) {
+            AddStackElem(stack, current_task.priority, current_task.task_time, current_task.duration_time);
+        }
+        current_task = queue.data[0];
+        queue.PopFront();
+    }
+
+    void Step() {
+        if (IsEmpty()) {
+            return;
+        }
+        if (current_task.duration_time == 0) {
+            // очередь с задачами высокого приоритета НЕ пуста и первая в очереди задача "не из будущего"
+            if (!high.IsEmpty() && high.data[0].task_time <= timer) {
+                AddCurrentTaskToStackAndTakeNewTask(high);
+            } else if (!medium.IsEmpty() && medium.data[0].task_time <= timer) { // очередь с задачами среднего приоритета НЕ пуста
+                AddCurrentTaskToStackAndTakeNewTask(medium);
+            } else if (!low.IsEmpty() && medium.data[0].task_time <= timer) {
+                AddCurrentTaskToStackAndTakeNewTask(low);
+            } else {
+                Task* task = stack->task_values;
+                current_task = {task->priority, task->task_time, task->duration_time};
+                PopStackElem(stack);
+            }
+        } else {
+            if (current_task.priority == 1) { // средний приоритет
+                // очередь с задачами высокого приоритета НЕ пуста и первая в очереди задача "не из будущего"
+                if (!high.IsEmpty() && high.data[0].task_time <= timer) {
+                    AddCurrentTaskToStackAndTakeNewTask(high);
+                }
+            } else if (current_task.priority == 2) { // низкий приоритет
+                if (!high.IsEmpty() && high.data[0].task_time <= timer) { // очередь с задачами высокого приоритета НЕ пуста
+                    AddCurrentTaskToStackAndTakeNewTask(high);
+                } else if (!medium.IsEmpty() && medium.data[0].task_time <= timer) { // очередь с задачами среднего приоритета НЕ пуста
+                    AddCurrentTaskToStackAndTakeNewTask(medium);
+                }
+            }
+        }
+
+        cout << ">Tact "s << timer << endl;
+        cout << ">Current task: "s << current_task;
+        cout << ">High priority queue:\n"s;
+        high.Print();
+        cout << ">Medium priority queue:\n"s;
+        medium.Print();
+        cout << ">Low priority queue:\n"s;
+        low.Print();
+        cout << ">Stack:\n"s << stack;
+        cout << "==============================================================\n"s;
+        ++timer;
+        --current_task.duration_time;
+    }
+};
 
 // =========================== НАЧАЛО ТЕСТОВ, ПРОВЕРЯЮЩИХ КОРРЕКТНОСТЬ РАБОТЫ ===========================>
 
@@ -206,84 +288,28 @@ void RunAllTests() {
 
 // <=========================== КОНЕЦ ТЕСТОВ, ПРОВЕРЯЮЩИХ КОРРЕКТНОСТЬ РАБОТЫ ===========================
 
-
-/*void processorLoop(TaskList *&IncomingTask) {
-    TaskList *Stack = NULL;
-    TaskList *Queue = NULL;
-    Task *OurProcessor = new Task;
-    OurProcessor->priority = 0;
-    OurProcessor->duration_time = 0;
-    bool emptyQueue = true; //Проверка пустоты Очереди
-    bool emptyStack = true; //Проверка пустоты Стека
-    bool processorIsFree = true; //Проверка занятости процессора
-    bool allTasksGone = false;
-    int timer = 1;
-    while(true) {
-        if (!allTasksGone) {
-            if (IncomingTask->task_values->task_time == timer) {
-                pushToQueue(IncomingTask, Queue, emptyQueue, allTasksGone);
-            }
-        }
-        if (!emptyQueue) {
-            if (Queue->task_values->priority > OurProcessor->priority || processorIsFree) {
-                if (OurProcessor->duration_time > 0) {
-                    pushToStack(Stack, OurProcessor, emptyStack, processorIsFree);
-                }
-                getFromQueue(Queue, OurProcessor, emptyQueue, processorIsFree);
-                while (true){
-                    if (!emptyQueue) {
-                        if (Queue->task_values->priority > OurProcessor->priority) {
-                            pushToStack(Stack, OurProcessor, emptyStack, processorIsFree);
-                            getFromQueue(Queue, OurProcessor, emptyQueue, processorIsFree);
-                        }
-                        else
-                        break;
-                    }
-                    else
-                    break;
-                }
-            }
-        } else if (!emptyStack) {
-            if (processorIsFree)
-            getFromStack(Stack, OurProcessor, emptyStack, processorIsFree);
-        }
-        cout << endl << “Идет “ << timer << “ такт” << endl;
-        if (!allTasksGone) {
-            cout << “Входные задания” << endl;
-            showStruct(IncomingTask);
-        }
-        if (!emptyStack) {
-            cout << “Содержимое стэка” << endl;
-            showStruct(Stack);
-        }
-        if (!emptyQueue) {
-            cout << “Содержимое очереди” << endl;
-            showStruct(Queue);
-        }
-        if (!processorIsFree) {
-            cout << “Содержимое процессора” << endl;
-            showStructElem(OurProcessor);
-        } else {
-            cout << «Процессор свободен» << endl;
-        }
-        if (!processorIsFree) {
-            if (OurProcessor->duration_time) {
-                OurProcessor->duration_time--;
-            }
-            if(OurProcessor->duration_time<=0) {
-                OurProcessor->duration_time = 0;
-                OurProcessor->priority = 0;
-                processorIsFree = true;
-            }
-        }
-        timer++;
-        if (emptyStack && emptyQueue && processorIsFree && allTasksGone)
-        break;
-    }
-    IncomingTask=NULL;
-} */
-
 int main() {
     RunAllTests();
+    constexpr int kCapacity = 5;
+
+    Task high_data[kCapacity];
+    Queue high{kCapacity, 0, 0, high_data}; // высокий
+    high.PushBack({0, 2, 3});
+    high.PushBack({0, 7, 2});
+
+    Task medium_data[kCapacity];
+    Queue medium{kCapacity, 0, 1, medium_data}; // средний
+    medium.PushBack({1, 3, 5});
+
+    Task low_data[kCapacity];
+    Queue low{kCapacity, 0, 2, low_data}; // низкий
+    low.PushBack({2, 4, 1});
+
+    Stack* stack = nullptr;
+    Processor proc{{0,1,1}, high, medium, low, stack};
+
+    while (!proc.IsEmpty()) {
+        proc.Step();
+    }
     return 0;
 }
