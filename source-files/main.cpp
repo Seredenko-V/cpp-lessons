@@ -38,7 +38,7 @@ void ClearList(LinearList*& node) {
     }
     while (node->next != nullptr) {
         LinearList* tmp = node->next;
-        delete[] node;
+        delete node;
         node = tmp;
     }
     delete node;
