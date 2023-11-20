@@ -14,6 +14,10 @@ struct Task {
     uint16_t duration_time;
 };
 
+bool operator==(const Task& lhs, const Task& rhs) {
+    return lhs.priority == rhs.priority && lhs.task_time == rhs.task_time && lhs.duration_time == rhs.duration_time;
+}
+
 ostream& operator<<(ostream& out, Task task) {
     out << "Priority task = "s << task.priority << "; Task time = "s << task.task_time
         << "; Duration time = "s << task.duration_time << ".\n";
@@ -25,11 +29,16 @@ struct Queue {
     int capacity = 0;
     int current_pos = 0;
     int priority = 0;
-    Task* data;
+    Task* data = nullptr;
+    int begin = 0;
 
     // Добавить элемент в конец очереди. Возвращает индекс куда будет добавлена новая задача
     int PushBack(Task task) {
         assert(capacity > current_pos);
+//        if (current_pos == capacity) {
+//            current_pos = 0;
+//            begin = (begin + 1) % capacity;
+//        }
         data[current_pos++] = task;
         return current_pos;
     }
@@ -160,6 +169,7 @@ struct Processor {
         if (IsEmpty()) {
             return;
         }
+        // Пытаемся взять задачу из очереди или стека
         if (current_task.duration_time == 0) {
             // очередь с задачами высокого приоритета НЕ пуста и первая в очереди задача "не из будущего"
             if (!high.IsEmpty() && high.data[0].task_time <= timer) {
@@ -168,12 +178,12 @@ struct Processor {
                 AddCurrentTaskToStackAndTakeNewTask(medium);
             } else if (!low.IsEmpty() && medium.data[0].task_time <= timer) {
                 AddCurrentTaskToStackAndTakeNewTask(low);
-            } else {
+            } else if (stack != nullptr) {
                 Task* task = stack->task_values;
                 current_task = {task->priority, task->task_time, task->duration_time};
                 PopStackElem(stack);
             }
-        } else {
+        } else { // Проверяем, есть ли более приоритетные задачи в очередях на данный момент времени
             if (current_task.priority == 1) { // средний приоритет
                 // очередь с задачами высокого приоритета НЕ пуста и первая в очереди задача "не из будущего"
                 if (!high.IsEmpty() && high.data[0].task_time <= timer) {
@@ -188,8 +198,13 @@ struct Processor {
             }
         }
 
-        cout << ">Tact "s << timer << endl;
-        cout << ">Current task: "s << current_task;
+        cout << ">Tact "s << timer++ << endl;
+        if (current_task.duration_time == 0) {
+            cout << ">Processor is free\n"s;
+        } else {
+            cout << ">Current task: "s << current_task;
+            --current_task.duration_time;
+        }
         cout << ">High priority queue:\n"s;
         high.Print();
         cout << ">Medium priority queue:\n"s;
@@ -197,13 +212,27 @@ struct Processor {
         cout << ">Low priority queue:\n"s;
         low.Print();
         cout << ">Stack:\n"s << stack;
-        cout << "==============================================================\n"s;
-        ++timer;
-        --current_task.duration_time;
+        cout << "------------------------------------------------------------------------\n"s;
     }
 };
 
 // =========================== НАЧАЛО ТЕСТОВ, ПРОВЕРЯЮЩИХ КОРРЕКТНОСТЬ РАБОТЫ ===========================>
+void TestOverflowQueue() {
+    constexpr int kCapacity = 5;
+    Task tasks[kCapacity];
+    Queue queue{kCapacity, 0, 1, tasks};
+    constexpr Task kBulkTask{0, 2, 7};
+    for (int i = 0; i < kCapacity; ++i) {
+        queue.PushBack(kBulkTask);
+    }
+    // вся очередь заполнена одинаковыми задачами
+    for (int i = 0; i < kCapacity; ++i) {
+        assert(queue.data[i] == kBulkTask);
+    }
+    constexpr Task kRandomTask{5, 5, 5};
+    queue.PushBack(kRandomTask);
+    cerr << "TestOverflowQueue has passed\n"s;
+}
 
 void TestDefineQueueForTask() {
     constexpr int kCapacity = 10;
@@ -279,17 +308,9 @@ void TestPushPopStack() {
     cerr << "TestPushPopStack has passed\n"s;
 }
 
-void RunAllTests() {
-    TestDefineQueueForTask();
-    TestPushPopStack();
-    cerr << ">>> AllTests has passed <<<\n"s;
-    cerr << "===========================\n"s;
-}
-
-// <=========================== КОНЕЦ ТЕСТОВ, ПРОВЕРЯЮЩИХ КОРРЕКТНОСТЬ РАБОТЫ ===========================
-
-int main() {
-    RunAllTests();
+// Буферизация задач в стек
+void TestUseStackInProcessor() {
+    cerr << "==================== Run TestUseStackInProcessor... ====================\n"s;
     constexpr int kCapacity = 5;
 
     Task high_data[kCapacity];
@@ -311,5 +332,46 @@ int main() {
     while (!proc.IsEmpty()) {
         proc.Step();
     }
+    cerr << "=================== Finish TestUseStackInProcessor... ==================\n\n"s;
+}
+
+// Ожидание задачи процессором
+void TestProcessorWait() {
+    cerr << "======================= Run TestProcessorWait... =======================\n"s;
+    constexpr int kCapacity = 5;
+
+    Task high_data[kCapacity];
+    Queue high{kCapacity, 0, 0, high_data}; // высокий
+    high.PushBack({0, 7, 2});
+
+    Task medium_data[kCapacity];
+    Queue medium{kCapacity, 0, 1, medium_data}; // средний
+
+    Task low_data[kCapacity];
+    Queue low{kCapacity, 0, 2, low_data}; // низкий
+
+    Stack* stack = nullptr;
+    Processor proc{{0,1,1}, high, medium, low, stack};
+
+    while (!proc.IsEmpty()) {
+        proc.Step();
+    }
+    cerr << "====================== Finish TestProcessorWait... =====================\n\n"s;
+}
+
+void RunAllTests() {
+//    TestOverflowQueue();
+    TestDefineQueueForTask();
+    TestPushPopStack();
+    TestUseStackInProcessor();
+    TestProcessorWait();
+    cerr << ">>>>>>>>>>>>>>>>>>>>>>>>>> AllTests has passed <<<<<<<<<<<<<<<<<<<<<<<<<\n"s;
+    cerr << "========================================================================\n"s;
+}
+
+// <=========================== КОНЕЦ ТЕСТОВ, ПРОВЕРЯЮЩИХ КОРРЕКТНОСТЬ РАБОТЫ ===========================
+
+int main() {
+    RunAllTests();
     return 0;
 }
