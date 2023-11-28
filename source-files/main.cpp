@@ -4,8 +4,12 @@
 using namespace std;
 
 int main() {
-    cout << "Code in cpp-lessons"s << endl;
-    cout << "Created a new branch"s << endl;
-    cout << "Branch is new-func. Fix bugs"s << endl;
+    int value = 5;
+    cout << "value before change = "s << value << endl;
+    int* ptr_value = &value;
+    cout << "*ptr_value = "s << *ptr_value << endl;
+    *ptr_value = 9;
+    cout << "value after change = "s << value << endl;
+
     return 0;
 }
