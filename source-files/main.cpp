@@ -1,204 +1,217 @@
 #include <iostream>
-#include <string>
-#include <random>
 #include <cassert>
-#include <fstream>
-#include <functional>
 
 using namespace std;
 
-/// ЛР04. Хеширование данных. Вариант 11.
-/// Формат ключа: БццццБ
-/// Количество сегментов: 3000
-/// Метод хеширования: Квадратичное опробование
+/// ЛР05. Алгоритмы сортировки. Вариант 11.
+/// Задача: Найти количество повторяющихся чисел среди элементов массива
+/// Алгоритм сортировки: Подсчетом
 
-// ======================================== РАНДОМАЙЗЕР КЛЮЧЕЙ ==========================================>
-/// Генерирование случайного числа в диапазоне [min_value; max_value]. По умолчанию [0; 9]
-int GetRandomNumber(int min_value = 0, int max_value = 9) {
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_int_distribution<> dist(min_value, max_value);
-    return dist(gen);
-}
-
-/// Генерирование случайного символа в диапазоне [min_symbol; max_symbol]. По умолчанию [A; Z]
-char GetRandomSymbol(char min_symbol = 'A', char max_symbol = 'Z') {
-    // произойдет неявная конвертация char к int согласно кодировке ascii
-    return GetRandomNumber(min_symbol, max_symbol);
-}
-
-/// Генерирование случайного ключа в куче
-uint16_t* GetRandomKey(const bool key_structure[], uint16_t key_size) {
-    uint16_t* key = new uint16_t[key_size];
-    for (uint16_t i = 0; i < key_size; ++i) {
-        key[i] = key_structure[i] ? GetRandomNumber() : GetRandomSymbol();
+template <typename Type>
+void PrintArray(Type arr[], uint32_t arr_size, ostream& out = cout) {
+    if (arr_size == 0) {
+        return;
     }
-    return key;
-}
-
-string IntArrToStr(const uint16_t key[], uint16_t key_size) {
-    constexpr uint16_t kZeroCodeAscii = 48u;
-    string text(key_size, '#');
-    for (uint16_t i = 0; i < key_size; ++i) {
-        text[i] = key[i] < 10 ? key[i] + kZeroCodeAscii : key[i];
+    assert(arr != nullptr);
+    out << '[';
+    for (uint32_t i = 0; i < arr_size - 1; ++i) {
+        out << arr[i] << ',';
     }
-    return text;
+    out << arr[arr_size - 1] << "]\n";
 }
 
-void PrintKey(const uint16_t key[], uint16_t key_size) {
-    cout << IntArrToStr(key, key_size) << endl;
-}
-// <======================================== РАНДОМАЙЗЕР КЛЮЧЕЙ ==========================================
-// #######################################################################################################
-// ============================================= ХЕШИРОВАНИЕ ============================================>
-struct Segment {
-    uint16_t* key = nullptr;
-    uint32_t number_calculated_hash = 0u;
-};
-
-/// Информация, необходимая для корректировки хеша, чтобы использовались все ячейки таблицы
-struct CorrectKey {
-    uint16_t min_key_code = 0u;
-    uint16_t max_key_code = 0u;
-    uint16_t expansion_coef = 0u;
-};
-
-CorrectKey DetermineDataForCorrectKeys(const bool key_structure[], uint16_t key_size, uint16_t num_segments) {
-    static constexpr uint16_t kMinDigitCode = '0';
-    static constexpr uint16_t kMaxDigitCode = '9';
-    static constexpr uint16_t kMinSymbolCode = 'A';
-    static constexpr uint16_t kMaxSymbolCode = 'Z';
-
-    uint16_t min_key_code = 0u;
-    uint16_t max_key_code = 0u;
-    for (uint16_t i = 0; i < key_size; ++i) {
-        if (key_structure[i]) { // если цифра
-            min_key_code += kMinDigitCode;
-            max_key_code += kMaxDigitCode;
-        } else {
-            min_key_code += kMinSymbolCode;
-            max_key_code += kMaxSymbolCode;
-        }
+/// Сложность: O(N^2) по времени - вложенный цикл и O(N) по памяти - доп. массив
+template <typename Type>
+Type* SortCounting(Type arr[], uint32_t arr_size) {
+    if (arr_size == 0) {
+        return nullptr;
     }
-    uint16_t expansion_coef = num_segments / (max_key_code - min_key_code);
-    return {min_key_code, max_key_code, expansion_coef};
-}
-
-/// Освобождение динамической памяти, выделенной для ключей
-void DeteleKeys(Segment hash_table[], uint16_t num_segments) {
-    for (uint16_t i = 0; i < num_segments; ++i) {
-        if (hash_table[i].key) {
-            delete[] hash_table[i].key;
-        }
-    }
-}
-
-uint16_t GetSimpleHash(const uint16_t key[], uint16_t key_size) {
-    uint16_t hash_value = 0;
-    for (uint16_t i = 0; i < key_size; ++i) {
-        hash_value += key[i]; // переполнение на этом этапе скажется положительно
-    }
-    return hash_value;
-}
-
-uint16_t GetGoodHash(const uint16_t key[], uint16_t key_size) {
-    uint16_t hash_value = 0;
-    for (uint16_t i = 0; i < key_size; ++i) {
-        hash_value += key[i] * key[i] * i; // переполнение на этом этапе скажется положительно
-    }
-    return hash_value;
-}
-
-uint16_t GetQuadraticProbHash(Segment& segment, uint16_t key_size, uint16_t num_segments, CorrectKey correcter_keys,
-                              function<uint16_t(const uint16_t*, uint16_t)> hash_func) {
-    static constexpr uint16_t kFirstSimpleValue = 29u;
-    static constexpr uint16_t kSecondSimpleValue = 101u;
-    uint32_t& number_calculated_hash = segment.number_calculated_hash;
-    uint16_t hash_value = hash_func(segment.key, key_size)
-            + kFirstSimpleValue * number_calculated_hash + kSecondSimpleValue * number_calculated_hash * number_calculated_hash;
-    hash_value = ((hash_value - correcter_keys.min_key_code) * correcter_keys.expansion_coef);
-    ++number_calculated_hash;
-    return hash_value % num_segments;
-}
-
-void RunHesher(const bool key_structure[], uint16_t key_size, Segment hash_table[], uint16_t num_segments,
-               function<uint16_t(const uint16_t*, uint16_t)> hash_func = GetGoodHash) {
-    const uint32_t kNumKeys = num_segments * 3;
-    const uint32_t kMaxNumProb = kNumKeys * 2;
-    const CorrectKey kCorrecterKeys = DetermineDataForCorrectKeys(key_structure, key_size, num_segments);
-    for (uint32_t key_id = 0; key_id < kNumKeys; ++key_id) {
-        Segment new_segment{GetRandomKey(key_structure, key_size), 0};
-        uint16_t hash_value = GetQuadraticProbHash(new_segment, key_size, num_segments, kCorrecterKeys, hash_func);
-        // сегмент по данному хешу существует и еще не достигнут максимум проб
-        while (hash_table[hash_value].key != nullptr && new_segment.number_calculated_hash != kMaxNumProb) {
-            hash_value = GetQuadraticProbHash(new_segment, key_size, num_segments, kCorrecterKeys, hash_func);
-        }
-        // если достигнут максимум проб, то сегмент не будет добавлен в таблицу и переходим к следующему ключу
-        if (new_segment.number_calculated_hash == kMaxNumProb) {
-            continue;
-        }
-        hash_table[hash_value] = new_segment;
-    }
-}
-
-void PrintStatToFile(Segment hash_table[], uint16_t num_segments, const string& file_name = "hash_stat.txt"s) {
-    ofstream fout(file_name);
-    assert(fout.is_open());
-    for (uint16_t i = 0; i < num_segments; ++i) {
-        fout << hash_table[i].number_calculated_hash << endl;
-    }
-}
-// <============================================ ХЕШИРОВАНИЕ =============================================
-// #######################################################################################################
-// =========================== НАЧАЛО ТЕСТОВ, ПРОВЕРЯЮЩИХ КОРРЕКТНОСТЬ РАБОТЫ ===========================>
-
-void TestKeysRandomGenerator() {
-    constexpr uint16_t kKeySize = 6u;
-    constexpr uint16_t kNumChecksRandomStructKeys = 20u;
-    constexpr uint16_t kNumChecksRandomKeys = 100u;
-    for (uint16_t key_id = 0; key_id < kNumChecksRandomStructKeys; ++key_id) {
-        bool key_structure[kKeySize];
-        // генерируется случайная структура ключа
-        for (uint16_t i = 0; i < kKeySize; ++i) {
-            key_structure[i] = GetRandomNumber(0, 1);
-        }
-        // генерируются случайные ключи
-        for (uint16_t i = 0; i < kNumChecksRandomKeys; ++i) {
-            uint16_t* random_key = GetRandomKey(key_structure, kKeySize);
-            string key = IntArrToStr(random_key, kKeySize);
-            for (uint16_t j = 0; j < static_cast<int>(key.size()); ++j) {
-                if (key_structure[j]) {
-                    assert(isdigit(key[j]));
-                } else {
-                    assert(isupper(key[j]));
-                }
+    assert(arr != nullptr);
+    Type* sort_arr = new Type[arr_size];
+    for (uint32_t i = 0; i < arr_size; ++i) {
+        uint32_t count_elems_is_more = 0;
+        for (uint32_t j = 0; j < arr_size; ++j) {
+            if (arr[i] > arr[j] || (arr[i] == arr[j] && j < i)) {
+                ++count_elems_is_more;
             }
-            delete[] random_key;
+        }
+        sort_arr[count_elems_is_more] = arr[i];
+    }
+    return sort_arr;
+}
+
+/// Сложность: O(N) по времени и O(1) по памяти
+template <typename Type>
+uint32_t FindNumSameElements(Type arr[], uint32_t arr_size) {
+    if (arr_size < 2) {
+        return 0;
+    }
+    assert(arr != nullptr);
+    uint32_t num_same_elements = 0;
+    bool is_continue_same = false;
+    for (uint32_t i = 0; i < arr_size - 1; ++i) {
+        if (arr[i] == arr[i + 1] && !is_continue_same) {
+            is_continue_same = true;
+            ++num_same_elements;
+        } else if (arr[i] != arr[i + 1]) {
+            is_continue_same = false;
         }
     }
-    cerr << "TestKeysRandomGenerator has passed\n";
+    return num_same_elements;
 }
-// <=========================== КОНЕЦ ТЕСТОВ, ПРОВЕРЯЮЩИХ КОРРЕКТНОСТЬ РАБОТЫ ===========================
+
+namespace tests {
+    // Работает для всех типов данных, имеющих operator!=, кроме double из-за точности
+    template <typename Type>
+    bool ArraysIsSame(Type lhs_arr[], uint32_t lhs_size, Type rhs_arr[], uint32_t rhs_size) {
+        if (lhs_size != rhs_size) {
+            return false;
+        }
+        for (uint32_t i = 0; i < lhs_size; ++i) {
+            if (lhs_arr[i] != rhs_arr[i]) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void TestSort() {
+        {
+            constexpr uint32_t kSize = 7;
+            int arr[kSize]{7,6,5,4,3,2,1};
+            int expected_arr[kSize]{1,2,3,4,5,6,7};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(ArraysIsSame(sort_arr, kSize, expected_arr, kSize));
+            delete[] sort_arr;
+        }{
+            constexpr uint32_t kSize = 5;
+            int arr[kSize]{4,123,4,5,4};
+            int expected_arr[kSize]{4,4,4,5,123};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(ArraysIsSame(sort_arr, kSize, expected_arr, kSize));
+            delete[] sort_arr;
+        }{
+            constexpr uint32_t kSize = 3;
+            int arr[kSize]{1,1,1};
+            int expected_arr[kSize]{1,1,1};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(ArraysIsSame(sort_arr, kSize, expected_arr, kSize));
+            delete[] sort_arr;
+        }{
+            constexpr uint32_t kSize = 6;
+            int arr[kSize]{1,1,5,1,1,1};
+            int expected_arr[kSize]{1,1,1,1,1,5};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(ArraysIsSame(sort_arr, kSize, expected_arr, kSize));
+            delete[] sort_arr;
+        }{
+            constexpr uint32_t kSize = 6;
+            int arr[kSize]{-1,1,5,1,-1,-45};
+            int expected_arr[kSize]{-45,-1,-1,1,1,5};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(ArraysIsSame(sort_arr, kSize, expected_arr, kSize));
+            delete[] sort_arr;
+        }{
+            constexpr uint32_t kSize = 0;
+            int arr[kSize];
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(sort_arr == nullptr);
+        }{
+            constexpr uint32_t kSize = 6;
+            int arr[kSize]{2,2,2,2,4,5};
+            int expected_arr[kSize]{2,2,2,2,4,5};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(ArraysIsSame(sort_arr, kSize, expected_arr, kSize));
+            delete[] sort_arr;
+        }
+        cerr << "TestSortInt has passed\n";
+    }
+
+    void TestFindNumSameElements() {
+        {
+            constexpr uint32_t kSize = 7;
+            int arr[kSize]{7,6,5,4,3,2,1};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(FindNumSameElements(sort_arr, kSize) == 0);
+            delete[] sort_arr;
+        }{
+            constexpr uint32_t kSize = 3;
+            int arr[kSize]{7,7,7};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(FindNumSameElements(sort_arr, kSize) == 1);
+            delete[] sort_arr;
+        }{
+            constexpr uint32_t kSize = 8;
+            int arr[kSize]{7,7,7,2,1,4,2,1};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(FindNumSameElements(sort_arr, kSize) == 3); // 1,2,7
+            delete[] sort_arr;
+        }{
+            constexpr uint32_t kSize = 0;
+            int arr[kSize];
+            int* sort_arr = SortCounting(arr, kSize); // nullptr
+            assert(FindNumSameElements(sort_arr, kSize) == 0);
+        }{
+            constexpr uint32_t kSize = 1;
+            int arr[kSize]{9};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(FindNumSameElements(sort_arr, kSize) == 0);
+            delete[] sort_arr;
+        }{
+            constexpr uint32_t kSize = 6;
+            int arr[kSize]{-1,1,5,1,-1,-45};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(FindNumSameElements(sort_arr, kSize) == 2); // -1,1
+            delete[] sort_arr;
+        }{
+            constexpr uint32_t kSize = 6;
+            int arr[kSize]{2,2,2,2,4,5};
+            int* sort_arr = SortCounting(arr, kSize);
+            assert(FindNumSameElements(sort_arr, kSize) == 1); // 2
+            delete[] sort_arr;
+        }
+        cerr << "TestFindNumSameElements has passed\n";
+    }
+
+    void RunAllTests() {
+        TestSort();
+        TestFindNumSameElements();
+        cerr << ">>> AllTest has passed <<<\n";
+    }
+} // namespace tests
+
+void RunExpample() {
+    static uint32_t count = 1u;
+    cout << "Run example "s << count++ << "...\n"s;
+    cout << "Enter size array: "s;
+    int size = 0;
+    cin >> size;
+    if (size < 0) {
+        cout << "Entered negative size array.\n"s;
+        return;
+    }
+    int* arr = new int[size];
+    for (int i = 0; i < size; ++i) {
+        cout << "arr["s << i << "] = "s;
+        cin >> arr[i];
+    }
+    cout << "Array elements:\n"s;
+    PrintArray(arr, size);
+    int* sort_arr = SortCounting(arr, size);
+    cout << "Sort array:\n"s;
+    PrintArray(sort_arr, size);
+    cout << "Number same elements = "s << FindNumSameElements(sort_arr, size) << endl;
+    delete[] arr;
+    delete[] sort_arr;
+}
 
 int main() {
-    TestKeysRandomGenerator();
-    constexpr uint16_t kKeySize = 6u;
-    constexpr bool kKeyStructure[kKeySize]{0,1,1,1,1,0}; // 1 - цифра, 0 - буква
-    constexpr uint16_t kNumSegments = 3000u; // до 65'535 элементов в таблице
-    { // с плохой хеш-функцией
-        Segment hash_table[kNumSegments];
-        cout << "Hashing random keys with simple hash function, wait...\n"s;
-        RunHesher(kKeyStructure, kKeySize, hash_table, kNumSegments, GetSimpleHash);
-        PrintStatToFile(hash_table, kNumSegments, "simple_hash_stat.txt"s);
-        DeteleKeys(hash_table, kNumSegments);
-        cout << "Hashing random keys with simple hash function finished successfully.\n"s;
-    }{ // с хорошей хеш-функцией
-        Segment hash_table[kNumSegments];
-        cout << "Hashing random keys with good hash function, wait...\n"s;
-        RunHesher(kKeyStructure, kKeySize, hash_table, kNumSegments, GetGoodHash);
-        PrintStatToFile(hash_table, kNumSegments, "good_hash_stat.txt"s);
-        DeteleKeys(hash_table, kNumSegments);
-        cout << "Hashing random keys with good hash function finished successfully.\n"s;
+    tests::RunAllTests();
+    char answer = 'y';
+    while (answer == 'y') {
+        RunExpample();
+        cout << "Do run example again? [y/n]\n"s;
+        cin >> answer;
     }
     return 0;
 }
