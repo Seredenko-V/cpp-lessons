@@ -16,7 +16,7 @@
 
 using namespace std;
 
-double recur(int, double, double, double);
+double recur(int, double&, double&, double&);
 
 int main() {
     setlocale(LC_ALL, "Russian");
@@ -33,7 +33,7 @@ int main() {
     return 0;
 }
 
-double recur(int m, double Y0, double Y1, double Y2) {
+double recur(int m, double& Y0, double& Y1, double& Y2) {
     double Sm = 0.0;
     for (int i = 3; i <= m; i++) {
         double Yi = cos(Y2) - 0.5 * sin(Y0) * sin(Y0);
