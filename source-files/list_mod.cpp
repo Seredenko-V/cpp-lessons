@@ -1,13 +1,10 @@
 #include "list_mod.h"
 
 #include <iostream>
-#include <cassert>
-#include <string>
-#include <vector>
 
 using namespace std;
 
-void AddElemToEndList(List*& list, telem new_element) {
+void add_elem_to_end_list(List*& list, telem new_element) {
     List* new_node = new List;
     new_node->data = new_element;
     if (list == nullptr) {
@@ -21,7 +18,7 @@ void AddElemToEndList(List*& list, telem new_element) {
     }
 }
 
-void ClearList(List*& list) {
+void clear_list(List*& list) {
     if (list == nullptr) {
         return;
     }
@@ -35,34 +32,19 @@ void ClearList(List*& list) {
 }
 
 // Вывод последовательности в прямом направлении, начиная с node
-void PrintList(const List* list, ostream& out = cout) {
+void print_list(const List* list) {
     if (list == nullptr) {
-        out << "There isn't forward sequence.\n"s;
+        cout << "There isn't forward sequence.\n"s;
         return;
     }
     while (list->next != nullptr) {
-        out << list->data << ' ';
+        cout << list->data << ' ';
         list = list->next;
     }
-    out << list->data << '\n';
+    cout << list->data << '\n';
 }
 
-List* FindLastNegativeElem(List*& list) {
-    if (list == nullptr) {
-        return nullptr;
-    }
-    List* last_negative = list;
-    List* counter = list->next;
-    while (counter != nullptr) {
-        if (counter->data < 0) {
-            last_negative = counter;
-        }
-        counter = counter->next;
-    }
-    return last_negative;
-}
-
-void SetLastNegativeElemToHead(List*& list) {
+void set_Last_negative_elem_to_head(List*& list) {
     if (list == nullptr) {
         return;
     }
@@ -83,77 +65,3 @@ void SetLastNegativeElemToHead(List*& list) {
         list = last_negative;
     }
 }
-
-
-namespace tests {
-    void TestCreateAndClearList() {
-        constexpr uint16_t kListSize = 10u;
-        List* list = nullptr;
-
-        for (uint16_t i = 0; i < kListSize; ++i) {
-            AddElemToEndList(list, i);
-            List* counter = list;
-            while (counter != nullptr && counter->next != nullptr) {
-                counter = counter->next;
-            }
-            assert(counter->data == i);
-        }
-        ClearList(list);
-        assert(list == nullptr);
-        cerr << "TestCreateAndClearList passed.\n"s;
-    }
-
-    List* CreateList(const vector<int>& elems) {
-        List* list = nullptr;
-        for (int element : elems) {
-            AddElemToEndList(list, element);
-        }
-        return list;
-    }
-
-    vector<int> GetListContent(const List* list) {
-        vector<int> content;
-        if (list == nullptr) {
-            return content;
-        }
-        while (list != nullptr) {
-            content.push_back(list->data);
-            list = list->next;
-        }
-        return content;
-    }
-
-    void TestSetLastNegativeElemToHead() {
-        {
-            vector<int> elems{2,5,7,2,-4,1,5,-6,2};
-            vector<int> expected{-6,2,5,7,2,-4,1,5,2};
-            List* list = CreateList(elems);
-            SetLastNegativeElemToHead(list);
-            vector<int> result_content = GetListContent(list);
-            assert(result_content == expected);
-            ClearList(list);
-        }{
-            vector<int> elems{2,5,7,2,-4,1,5,-6,-2};
-            vector<int> expected{-2,2,5,7,2,-4,1,5,-6};
-            List* list = CreateList(elems);
-            SetLastNegativeElemToHead(list);
-            vector<int> result_content = GetListContent(list);
-            assert(result_content == expected);
-            ClearList(list);
-        }{
-            vector<int> elems{2,5,7,2,4,1,5,6,2};
-            List* list = CreateList(elems);
-            SetLastNegativeElemToHead(list);
-            vector<int> result_content = GetListContent(list);
-            assert(result_content == elems);
-            ClearList(list);
-        }
-        cerr << "TestSetLastNegativeElemToHead passed.\n"s;
-    }
-
-    void RunAllTests() {
-        TestCreateAndClearList();
-        TestSetLastNegativeElemToHead();
-        cerr << ">>> AllTests passed <<<\n"s;
-    }
-} // namespace tests

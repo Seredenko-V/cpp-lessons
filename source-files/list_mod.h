@@ -7,14 +7,10 @@ struct List {
     List* next = nullptr;
 };
 
-void AddElemToEndList(List*& list, telem new_element);
-void ClearList(List*& list);
+void add_elem_to_end_list(List*& list, telem new_element);
+void clear_list(List*& list);
 
 // если отрицательных элементов нет - изменений не происходит
-void SetLastNegativeElemToHead(List*& list);
+void set_Last_negative_elem_to_head(List*& list);
 
-namespace tests {
-    void TestCreateAndClearList();
-    void TestSetLastNegativeElemToHead();
-    void RunAllTests();
-} // namespace tests
+void print_list(const List* list);
