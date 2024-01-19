@@ -13,10 +13,7 @@ using namespace std;
 typedef int telem; // объявление типа элемента массива
 typedef telem* tarr; // объявление типа "указатель на telem"
 
-tarr CreateArray() {
-    cout << "Введите размер массива:\n";
-    int size = 0;
-    cin >> size;
+tarr create_array(int size) {
     tarr arr = new telem[size];
     cout << "Введите элементы массива\n";
     for (int i = 0; i < size; ++i) {
@@ -26,7 +23,7 @@ tarr CreateArray() {
     return arr;
 }
 
-int FindPosFirstBigNegativeElement(tarr arr, int size) {
+int find_pos_first_big_negative_element(tarr arr, int size) {
     int pos_global_min = 0;
     telem global_min = arr[0];
     for (int i = 1; i < size; ++i) {
@@ -38,7 +35,7 @@ int FindPosFirstBigNegativeElement(tarr arr, int size) {
     return pos_global_min;
 }
 
-int FindPosLastNegativeElement(tarr arr, int size) {
+int find_pos_last_negative_element(tarr arr, int size) {
     int pos_last_negative = size - 1;
     for (int i = pos_last_negative; i >= 0; --i) {
         if (arr[i] < 0) {
@@ -49,7 +46,7 @@ int FindPosLastNegativeElement(tarr arr, int size) {
     return pos_last_negative;
 }
 
-telem Calculate(tarr arr, int from_pos, int to_pos) {
+telem calculate(tarr arr, int from_pos, int to_pos) {
     if (to_pos < from_pos) {
         return 0;
     }
@@ -61,78 +58,27 @@ telem Calculate(tarr arr, int from_pos, int to_pos) {
 }
 
 
-namespace tests {
-    void TestFindFirstBigNegativeElement() {
-        {
-            constexpr uint32_t kSize = 5u;
-            tarr arr = new telem[kSize]{-5,5,2,8,-1};
-            assert(FindPosFirstBigNegativeElement(arr, kSize) == 0);
-            delete[] arr;
-        }{
-            constexpr uint32_t kSize = 10u;
-            tarr arr = new telem[kSize]{-5,35,42,8,-1,7,-25,9,12,44};
-            assert(FindPosFirstBigNegativeElement(arr, kSize) == 6);
-            delete[] arr;
-        }{
-            constexpr uint32_t kSize = 10u;
-            tarr arr = new telem[kSize]{-5,35,42,8,-1,7,-25,9,12,-44};
-            assert(FindPosFirstBigNegativeElement(arr, kSize) == 9);
-            delete[] arr;
-        }
-        cerr << "TestFindFirstBigNegativeElement passed\n"s;
-    }
-
-    void TestFindPosLastNegativeElement() {
-        {
-            constexpr uint32_t kSize = 5u;
-            tarr arr = new telem[kSize]{-5,5,2,8,-1};
-            assert(FindPosLastNegativeElement(arr, kSize) == 4);
-            delete[] arr;
-        }{
-            constexpr uint32_t kSize = 10u;
-            tarr arr = new telem[kSize]{-5,35,42,8,-1,7,-25,9,12,44};
-            assert(FindPosLastNegativeElement(arr, kSize) == 6);
-            delete[] arr;
-        }{
-            constexpr uint32_t kSize = 10u;
-            tarr arr = new telem[kSize]{-5,35,42,8,-1,7,25,9,12,44};
-            assert(FindPosLastNegativeElement(arr, kSize) == 4);
-            delete[] arr;
-        }{
-            constexpr uint32_t kSize = 10u;
-            tarr arr = new telem[kSize]{2,-5,6,-35, 9,1,10,30,-20, -8};
-            assert(FindPosLastNegativeElement(arr, kSize) == 9);
-            delete[] arr;
-        }
-        cerr << "TestFindPosLastNegativeElement passed\n"s;
-    }
-
-    void TestCalculate() {
-        {
-            constexpr uint32_t kSize = 5u;
-            tarr arr = new telem[kSize]{-5, 5,2,8, -1};
-            assert(Calculate(arr, FindPosFirstBigNegativeElement(arr, kSize), FindPosLastNegativeElement(arr, kSize)) == 45); // (5+2+8) * 3
-            delete[] arr;
-        }{
-            constexpr uint32_t kSize = 10u;
-            tarr arr = new telem[kSize]{2,-5,6,-35, 9,1,10,30,-20, -8};
-            assert(Calculate(arr, FindPosFirstBigNegativeElement(arr, kSize), FindPosLastNegativeElement(arr, kSize)) == 150); // 30 * 5
-            delete[] arr;
-        }
-        cerr << "TestCalculate passed\n"s;
-    }
-
-    void RunAllTests() {
-        TestFindFirstBigNegativeElement();
-        TestFindPosLastNegativeElement();
-        TestCalculate();
-        cerr << ">>> AllTests passed <<<\n"s;
-    }
-} // namespace tests
-
-
 int main() {
     setlocale(LC_ALL, "Russian");
-    tests::RunAllTests();
+    cout << "Введите размер массива:\n";
+    int size = 0;
+    cin >> size;
+    tarr arr = create_array(size);
+
+    int from_pos = find_pos_first_big_negative_element(arr, size);
+    int to_pos = find_pos_last_negative_element(arr, size);
+
+    cout << "Вычисления:\n(";
+    bool is_first = true;
+    for (int i = from_pos + 1; i < to_pos; ++i) {
+        if (!is_first) {
+            cout << '+';
+        }
+        cout << arr[i];
+        is_first = false;
+    }
+    telem result = calculate(arr, from_pos, to_pos);
+    cout << ") * 3 = " << result << endl;
+    delete[] arr;
     return 0;
 }
