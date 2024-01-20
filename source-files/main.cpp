@@ -5,7 +5,7 @@
 
 #include <clocale>
 #include <iostream>
-#include <cassert>
+#include <ctime>
 
 using namespace std;
 
@@ -13,85 +13,43 @@ typedef int telem; // объявление типа элемента масси�
 typedef telem* tstr; // объявление типа "указатель на telem"
 typedef tstr* tmatr; //тип "указатель на указатель на telem"
 
-tmatr AllocateMemory(int str, int col);
-void FreeMemory(tmatr matrix, int str);
-void PrintMatrix(tmatr matrix, int str, int col);
-void DoPermutation(tmatr matrix, int size);
-
-namespace tests {
-    void Test() {
-        {
-            constexpr uint32_t kSize = 4u;
-            telem static_matr[kSize][kSize]{
-                {1,2,3,4},
-                {5,6,7,8},
-                {9,0,1,2},
-                {3,4,5,6}
-            };
-            telem expected_matr[kSize][kSize]{
-                {1,8,3,4},
-                {5,6,7,2},
-                {9,0,1,2},
-                {3,4,5,6}
-            };
-            tmatr dynamic_matr = AllocateMemory(kSize, kSize);
-            for (int i = 0; i < kSize; ++i) {
-                for (int j = 0; j < kSize; ++j) {
-                    dynamic_matr[i][j] = static_matr[i][j];
-                }
-            }
-            DoPermutation(dynamic_matr, kSize);
-            for (int i = 0; i < kSize; ++i) {
-                for (int j = 0; j < kSize; ++j) {
-                    assert(dynamic_matr[i][j] == expected_matr[i][j]);
-                }
-            }
-            FreeMemory(dynamic_matr, kSize);
-        }{
-            constexpr uint32_t kSize = 6u;
-            telem static_matr[kSize][kSize]{
-                {1,2,3,4,5,6},
-                {7,8,9,0,1,2},
-                {3,4,5,6,7,8},
-                {9,0,1,2,3,4},
-                {5,6,7,8,9,0},
-                {1,2,3,4,5,6}
-            };
-            telem expected_matr[kSize][kSize]{
-                {1,2,8,4,5,6},
-                {7,8,7,0,1,2},
-                {3,4,5,6,9,3},
-                {9,0,1,2,3,4},
-                {5,6,7,8,9,0},
-                {1,2,3,4,5,6}
-            };
-            tmatr dynamic_matr = AllocateMemory(kSize, kSize);
-            for (int i = 0; i < kSize; ++i) {
-                for (int j = 0; j < kSize; ++j) {
-                    dynamic_matr[i][j] = static_matr[i][j];
-                }
-            }
-            DoPermutation(dynamic_matr, kSize);
-            for (int i = 0; i < kSize; ++i) {
-                for (int j = 0; j < kSize; ++j) {
-                    assert(dynamic_matr[i][j] == expected_matr[i][j]);
-                }
-            }
-            FreeMemory(dynamic_matr, kSize);
-        }
-        cerr << "Test passed\n";
-    }
-} // namespace tests;
+tmatr allocate_memory(int str, int col);
+void free_memory(tmatr matrix, int str);
+void fill_matrix_random_elems(tmatr matrix, int str, int col, int from, int to);
+void print_matrix(tmatr matrix, int str, int col);
+void do_permutation(tmatr matrix, int size);
 
 
 int main() {
+    srand(time(0));
     setlocale(LC_ALL, "Russian");
-    tests::Test();
+    int size = 0;
+    cout << "Введите размер квадратной матрицы, который будет умножен на 2: ";
+    cin >> size;
+    size *= 2;
+
+    int from_rand = 0;
+    int to_rand = 0;
+    cout << "Введите пределы генерирования случайных чисел.\n";
+    cout << "От ";
+    cin >> from_rand;
+    cout << "До ";
+    cin >> to_rand;
+
+    tmatr matrix = allocate_memory(size, size);
+    fill_matrix_random_elems(matrix, size, size, from_rand, to_rand);
+    cout << "Матрица " << size << 'x' << size << " из случайных элементов:\n";
+    print_matrix(matrix, size, size);
+
+    do_permutation(matrix, size);
+    cout << "Результат перестановки элементов из между 1 и 3 областями:\n";
+    print_matrix(matrix, size, size);
+    free_memory(matrix, size);
     return 0;
 }
 
 
-tmatr AllocateMemory(int str, int col) {
+tmatr allocate_memory(int str, int col) {
     tmatr matrix = new tstr[str];
     for (int i = 0; i < str; ++i) {
         matrix[i] = new telem[col];
@@ -99,14 +57,22 @@ tmatr AllocateMemory(int str, int col) {
     return matrix;
 }
 
-void FreeMemory(tmatr matrix, int str) {
+void free_memory(tmatr matrix, int str) {
     for (int i = 0; i < str; ++i) {
         delete[] matrix[i];
     }
-    delete matrix;
+    delete[] matrix;
 }
 
-void PrintMatrix(tmatr matrix, int str, int col) {
+void fill_matrix_random_elems(tmatr matrix, int str, int col, int from, int to) {
+    for (int i = 0; i < str; ++i) {
+        for (int j = 0; j < col; ++j) {
+            matrix[i][j] = rand() % (to - from + 1) + from;
+        }
+    }
+}
+
+void print_matrix(tmatr matrix, int str, int col) {
     for (int i = 0; i < str; ++i) {
         for (int j = 0; j < col; ++j) {
             cout << matrix[i][j] << ' ';
@@ -115,7 +81,7 @@ void PrintMatrix(tmatr matrix, int str, int col) {
     }
 }
 
-void DoPermutation(tmatr matrix, int size) {
+void do_permutation(tmatr matrix, int size) {
     if (size % 2) { // нечетное кол-во строк и столбцов
         return;
     }
