@@ -1,8 +1,7 @@
-/// ЛР09-А. Динамические массивы. Вариант 36.
+/// ЛР09-Б. Динамические массивы. Вариант 36.
 /// Задача:
-/// Дан массив z0, z1, z2,…, zn-1. Определить произведение суммы положительных значений элементов массива,
-/// лежащих между первым элементом с наибольшим неположительным значением и последним элементом массива
-/// с отрицательным значением, на их количество.
+/// В заданной квадратной матрице размера 2n×2n поменять местами значения элементов
+/// строк области 3 и элементов столбцов области 1 (см. рисунок) с одинаковыми номерами.
 
 #include <clocale>
 #include <iostream>
@@ -11,74 +10,121 @@
 using namespace std;
 
 typedef int telem; // объявление типа элемента массива
-typedef telem* tarr; // объявление типа "указатель на telem"
+typedef telem* tstr; // объявление типа "указатель на telem"
+typedef tstr* tmatr; //тип "указатель на указатель на telem"
 
-tarr create_array(int size) {
-    tarr arr = new telem[size];
-    cout << "Введите элементы массива\n";
-    for (int i = 0; i < size; ++i) {
-        cout << "arr[" << i << "] = ";
-        cin >> arr[i];
-    }
-    return arr;
-}
+tmatr AllocateMemory(int str, int col);
+void FreeMemory(tmatr matrix, int str);
+void PrintMatrix(tmatr matrix, int str, int col);
+void DoPermutation(tmatr matrix, int size);
 
-int find_pos_first_big_negative_element(tarr arr, int size) {
-    int pos_global_min = 0;
-    telem global_min = arr[0];
-    for (int i = 1; i < size; ++i) {
-        if (arr[i] < global_min) {
-            global_min = arr[i];
-            pos_global_min = i;
+namespace tests {
+    void Test() {
+        {
+            constexpr uint32_t kSize = 4u;
+            telem static_matr[kSize][kSize]{
+                {1,2,3,4},
+                {5,6,7,8},
+                {9,0,1,2},
+                {3,4,5,6}
+            };
+            telem expected_matr[kSize][kSize]{
+                {1,8,3,4},
+                {5,6,7,2},
+                {9,0,1,2},
+                {3,4,5,6}
+            };
+            tmatr dynamic_matr = AllocateMemory(kSize, kSize);
+            for (int i = 0; i < kSize; ++i) {
+                for (int j = 0; j < kSize; ++j) {
+                    dynamic_matr[i][j] = static_matr[i][j];
+                }
+            }
+            DoPermutation(dynamic_matr, kSize);
+            for (int i = 0; i < kSize; ++i) {
+                for (int j = 0; j < kSize; ++j) {
+                    assert(dynamic_matr[i][j] == expected_matr[i][j]);
+                }
+            }
+            FreeMemory(dynamic_matr, kSize);
+        }{
+            constexpr uint32_t kSize = 6u;
+            telem static_matr[kSize][kSize]{
+                {1,2,3,4,5,6},
+                {7,8,9,0,1,2},
+                {3,4,5,6,7,8},
+                {9,0,1,2,3,4},
+                {5,6,7,8,9,0},
+                {1,2,3,4,5,6}
+            };
+            telem expected_matr[kSize][kSize]{
+                {1,2,8,4,5,6},
+                {7,8,7,0,1,2},
+                {3,4,5,6,9,3},
+                {9,0,1,2,3,4},
+                {5,6,7,8,9,0},
+                {1,2,3,4,5,6}
+            };
+            tmatr dynamic_matr = AllocateMemory(kSize, kSize);
+            for (int i = 0; i < kSize; ++i) {
+                for (int j = 0; j < kSize; ++j) {
+                    dynamic_matr[i][j] = static_matr[i][j];
+                }
+            }
+            DoPermutation(dynamic_matr, kSize);
+            for (int i = 0; i < kSize; ++i) {
+                for (int j = 0; j < kSize; ++j) {
+                    assert(dynamic_matr[i][j] == expected_matr[i][j]);
+                }
+            }
+            FreeMemory(dynamic_matr, kSize);
         }
+        cerr << "Test passed\n";
     }
-    return pos_global_min;
-}
-
-int find_pos_last_negative_element(tarr arr, int size) {
-    int pos_last_negative = size - 1;
-    for (int i = pos_last_negative; i >= 0; --i) {
-        if (arr[i] < 0) {
-            pos_last_negative = i;
-            break;
-        }
-    }
-    return pos_last_negative;
-}
-
-telem calculate(tarr arr, int from_pos, int to_pos) {
-    if (to_pos < from_pos) {
-        return 0;
-    }
-    telem result = 0;
-    for (int i = from_pos + 1; i < to_pos; ++i) {
-        result += arr[i];
-    }
-    return result * (to_pos - from_pos - 1);
-}
+} // namespace tests;
 
 
 int main() {
     setlocale(LC_ALL, "Russian");
-    cout << "Введите размер массива:\n";
-    int size = 0;
-    cin >> size;
-    tarr arr = create_array(size);
-
-    int from_pos = find_pos_first_big_negative_element(arr, size);
-    int to_pos = find_pos_last_negative_element(arr, size);
-
-    cout << "Вычисления:\n(";
-    bool is_first = true;
-    for (int i = from_pos + 1; i < to_pos; ++i) {
-        if (!is_first) {
-            cout << '+';
-        }
-        cout << arr[i];
-        is_first = false;
-    }
-    telem result = calculate(arr, from_pos, to_pos);
-    cout << ") * 3 = " << result << endl;
-    delete[] arr;
+    tests::Test();
     return 0;
+}
+
+
+tmatr AllocateMemory(int str, int col) {
+    tmatr matrix = new tstr[str];
+    for (int i = 0; i < str; ++i) {
+        matrix[i] = new telem[col];
+    }
+    return matrix;
+}
+
+void FreeMemory(tmatr matrix, int str) {
+    for (int i = 0; i < str; ++i) {
+        delete[] matrix[i];
+    }
+    delete matrix;
+}
+
+void PrintMatrix(tmatr matrix, int str, int col) {
+    for (int i = 0; i < str; ++i) {
+        for (int j = 0; j < col; ++j) {
+            cout << matrix[i][j] << ' ';
+        }
+        cout << endl;
+    }
+}
+
+void DoPermutation(tmatr matrix, int size) {
+    if (size % 2) { // нечетное кол-во строк и столбцов
+        return;
+    }
+    for (int i1 = 0; i1 < size / 2 - 1; ++i1) {
+        for (int j1 = i1 + 1; j1 < size / 2; ++j1) {
+            const int j3 = size - 1 - i1;
+            telem tmp = matrix[i1][j1];
+            matrix[i1][j1] = matrix[j1][j3];
+            matrix[j1][j3] = tmp;
+        }
+    }
 }
