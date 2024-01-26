@@ -1,96 +1,84 @@
-/// ЛР09-Б. Динамические массивы. Вариант 36.
+/// ЛР09-А. Динамические массивы. Вариант 36.
 /// Задача:
-/// В заданной квадратной матрице размера 2n×2n поменять местами значения элементов
-/// строк области 3 и элементов столбцов области 1 (см. рисунок) с одинаковыми номерами.
+/// Дан массив z0, z1, z2,…, zn-1. Определить произведение суммы положительных значений элементов массива,
+/// лежащих между первым элементом с наибольшим неположительным значением и последним элементом массива
+/// с отрицательным значением, на их количество.
 
 #include <clocale>
 #include <iostream>
-#include <ctime>
+#include <cassert>
 
 using namespace std;
 
 typedef int telem; // объявление типа элемента массива
-typedef telem* tstr; // объявление типа "указатель на telem"
-typedef tstr* tmatr; //тип "указатель на указатель на telem"
+typedef telem* tarr; // объявление типа "указатель на telem"
 
-tmatr allocate_memory(int str, int col);
-void free_memory(tmatr matrix, int str);
-void fill_matrix_random_elems(tmatr matrix, int str, int col, int from, int to);
-void print_matrix(tmatr matrix, int str, int col);
-void do_permutation(tmatr matrix, int size);
+tarr create_array(int size) {
+    tarr arr = new telem[size];
+    cout << "Введите элементы массива\n";
+    for (int i = 0; i < size; ++i) {
+        cout << "arr[" << i << "] = ";
+        cin >> arr[i];
+    }
+    return arr;
+}
+
+int find_pos_first_big_negative_element(tarr arr, int size) {
+    int pos_global_min = 0;
+    telem global_min = arr[0];
+    for (int i = 1; i < size; ++i) {
+        if (arr[i] < global_min) {
+            global_min = arr[i];
+            pos_global_min = i;
+        }
+    }
+    return pos_global_min;
+}
+
+int find_pos_last_negative_element(tarr arr, int size) {
+    int pos_last_negative = size - 1;
+    for (int i = pos_last_negative; i >= 0; --i) {
+        if (arr[i] < 0) {
+            pos_last_negative = i;
+            break;
+        }
+    }
+    return pos_last_negative;
+}
+
+telem calculate(tarr arr, int from_pos, int to_pos) {
+    if (to_pos < from_pos) {
+        return 0;
+    }
+    telem result = 0;
+    for (int i = from_pos + 1; i < to_pos; ++i) {
+        result += arr[i];
+    }
+    return result * (to_pos - from_pos - 1);
+}
 
 
 int main() {
-    srand(time(0));
     setlocale(LC_ALL, "Russian");
+    cout << "Введите размер массива:\n";
     int size = 0;
-    cout << "Введите размер квадратной матрицы, который будет умножен на 2: ";
     cin >> size;
-    size *= 2;
+    tarr arr = create_array(size);
 
-    int from_rand = 0;
-    int to_rand = 0;
-    cout << "Введите пределы генерирования случайных чисел.\n";
-    cout << "От ";
-    cin >> from_rand;
-    cout << "До ";
-    cin >> to_rand;
+    int from_pos = find_pos_first_big_negative_element(arr, size);
+    int to_pos = find_pos_last_negative_element(arr, size);
 
-    tmatr matrix = allocate_memory(size, size);
-    fill_matrix_random_elems(matrix, size, size, from_rand, to_rand);
-    cout << "Матрица " << size << 'x' << size << " из случайных элементов:\n";
-    print_matrix(matrix, size, size);
-
-    do_permutation(matrix, size);
-    cout << "Результат перестановки элементов из между 1 и 3 областями:\n";
-    print_matrix(matrix, size, size);
-    free_memory(matrix, size);
+    cout << "Вычисления:\n(";
+    bool is_first = true;
+    for (int i = from_pos + 1; i < to_pos; ++i) {
+        if (!is_first) {
+            cout << '+';
+        }
+        cout << arr[i];
+        is_first = false;
+    }
+    telem result = calculate(arr, from_pos, to_pos);
+    cout << ") * " << to_pos - from_pos - 1 << " = " << result << endl;
+    delete[] arr;
     return 0;
-}
-
-
-tmatr allocate_memory(int str, int col) {
-    tmatr matrix = new tstr[str];
-    for (int i = 0; i < str; ++i) {
-        matrix[i] = new telem[col];
-    }
-    return matrix;
-}
-
-void free_memory(tmatr matrix, int str) {
-    for (int i = 0; i < str; ++i) {
-        delete[] matrix[i];
-    }
-    delete[] matrix;
-}
-
-void fill_matrix_random_elems(tmatr matrix, int str, int col, int from, int to) {
-    for (int i = 0; i < str; ++i) {
-        for (int j = 0; j < col; ++j) {
-            matrix[i][j] = rand() % (to - from + 1) + from;
-        }
-    }
-}
-
-void print_matrix(tmatr matrix, int str, int col) {
-    for (int i = 0; i < str; ++i) {
-        for (int j = 0; j < col; ++j) {
-            cout << matrix[i][j] << ' ';
-        }
-        cout << endl;
-    }
-}
-
-void do_permutation(tmatr matrix, int size) {
-    if (size % 2) { // нечетное кол-во строк и столбцов
-        return;
-    }
-    for (int i1 = 0; i1 < size / 2 - 1; ++i1) {
-        for (int j1 = i1 + 1; j1 < size / 2; ++j1) {
-            const int j3 = size - 1 - i1;
-            telem tmp = matrix[i1][j1];
-            matrix[i1][j1] = matrix[j1][j3];
-            matrix[j1][j3] = tmp;
-        }
-    }
 }
