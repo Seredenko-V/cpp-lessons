@@ -74,6 +74,7 @@ ls -a ~/.ssh
 ```
 
 ## 3 Привязываем SSH ключ к аккаунту на GitHub
+
 1. Переходим в раздел "**Settings**"
 КАРТИНКА
 
@@ -97,6 +98,12 @@ The authenticity of host 'github.com (140.82.121.4)' can't be established. ED255
 
 ```
 Hi %ТВОЙ_АККАУНТ GITHUB%! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+6. Указываем свою почту в консоли git bash при помощи команды
+
+```
+git config --global user.email "you@example.com"
 ```
 
 ## 4 Порядок взаимодействия с этим репозиторием
@@ -139,4 +146,5 @@ git push -u origin название_ветки
 2. Переходим на GitHub, в свой репозиторий, и создаем pull request (запрос на вытягивание/слияние) как на скриншоте
 
 3. Ждем обратной связи касательно отправленного решения задачи.
+
 
