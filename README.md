@@ -93,7 +93,7 @@ ls -a ~/.ssh
 The authenticity of host 'github.com (140.82.121.4)' can't be established. ED25519 key fingerprint is SHA256:+DiY3wvvV6TuJJhbpZisF/zLDA0zPMSvHdkr4UvCOqU. This key is not known by any other names. Are you sure you want to continue connecting (yes/no/[fingerprint])?
 ```
 
-то всё в порядке, просто нужно ввести `y`, после чего появится это сообщение
+то всё в порядке, просто нужно ввести `yes`, после чего появится это сообщение
 
 ```
 Hi %ТВОЙ_АККАУНТ GITHUB%! You've successfully authenticated, but GitHub does not provide shell access.
