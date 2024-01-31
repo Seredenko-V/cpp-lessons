@@ -78,6 +78,7 @@ ls -a ~/.ssh
 ## 3 Привязываем SSH ключ к аккаунту на GitHub
 
 1. Переходим в раздел "**Settings**"
+
 ![bind-ssh-1](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/bind-ssh-1.png)
 
 2. Переходим в раздел "**SSH and GPG keys**"
@@ -110,8 +111,10 @@ git config --global user.email "you@example.com"
 
 ## 4 Порядок взаимодействия с этим репозиторием
 ### 4.1 Начало взаимодействия
-1. После создания ветки для индивидуальных занятий (об этом сообшу лично) нужно форкнуть (скопировать к себе на GitHub) этот репозиторий
+1. После создания ветки для индивидуальных занятий (об этом сообщу лично) нужно форкнуть (скопировать к себе на GitHub) этот репозиторий
 ![fork-cpp-lessons-1](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/fork-cpp-lessons-1.png)
+
+Убираем галочку в графе "Copy the main branch only"
 ![fork-cpp-lessons-2](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/fork-cpp-lessons-2.png)
 
 2. Загрузить форкнутый репозиторий к себе на компьютер при помощи команды
