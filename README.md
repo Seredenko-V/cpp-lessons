@@ -16,7 +16,6 @@
 На пером этапе следует установить консоль git bash для Windows. Скачать её установочник можно по [этой ссылке](https://git-scm.com/download/win). 
 На странице скачивания, в разделе `Standalone Installer`, следует выбрать версию, которая соответствует архитектуре вашей системы.  
 
-КАРТИНКА
 Рекомендуется чтобы путь к каталогу, в которой будет установлен git, не содержал пробелов и киррилицы. Другими словами, каталог, путь к которому 
 выглядит примерно так
 
@@ -31,12 +30,14 @@ C:\dev
 ```
 
 
-КАРТИНКА
+![path-install](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/path-install.png)
 
 
 Остальные параметры во время установки менять не нужно, просто прожимаем "Далее" пока не установим.   
 
-Если всё установилось успешно, то можно открыть git bash и написать там `git --version`. КАРТИНКА
+Если всё установилось успешно, то можно открыть git bash и написать там `git --version`.
+
+![installed-git-bash](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/ready-git-bash.png)
 
 
 ## 2 Создание SSH ключа для взаимодействия с GitHub
@@ -72,20 +73,20 @@ Enter same passphrase again: [просто нажимаем enter]
 ```
 ls -a ~/.ssh
 ```
+![created-ssh-key](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/created-ssh-key.png)
 
 ## 3 Привязываем SSH ключ к аккаунту на GitHub
 
 1. Переходим в раздел "**Settings**"
-КАРТИНКА
+![bind-ssh-1](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/bind-ssh-1.png)
 
 2. Переходим в раздел "**SSH and GPG keys**"
-КАРТИНКА
+![bind-ssh-2](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/bind-ssh-2.png)
 
 3. Нажимаем на "**New SSH key**"
-КАРТИНКА
 
 4. В открывшемся окне, в графе "Title" вводим название нашего ключа, например, "MyPC key". В графе "Key" - содержимое файла `~/.ssh/id_ed25519.pub`.
-КАРТИНКА
+![bind-ssh-3](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/bind-ssh-3.png)
 
 5. Проверяем правильность выполненных действий при помощи команды `ssh -T git@github.com`.  
 Если появится надпись
@@ -99,6 +100,7 @@ The authenticity of host 'github.com (140.82.121.4)' can't be established. ED255
 ```
 Hi %ТВОЙ_АККАУНТ GITHUB%! You've successfully authenticated, but GitHub does not provide shell access.
 ```
+![bind-ssh-4](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/bind-ssh-4.png)
 
 6. Указываем свою почту в консоли git bash при помощи команды
 
@@ -109,13 +111,17 @@ git config --global user.email "you@example.com"
 ## 4 Порядок взаимодействия с этим репозиторием
 ### 4.1 Начало взаимодействия
 1. После создания ветки для индивидуальных занятий (об этом сообшу лично) нужно форкнуть (скопировать к себе на GitHub) этот репозиторий
-КАРТИНКА
+![fork-cpp-lessons-1](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/fork-cpp-lessons-1.png)
+![fork-cpp-lessons-2](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/fork-cpp-lessons-2.png)
 
 2. Загрузить форкнутый репозиторий к себе на компьютер при помощи команды
 
 ```
 git clone <SSH-key>
 ```
+
+![fork-cpp-lessons-3](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/fork-cpp-lessons-3.png)
+![fork-cpp-lessons-4](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/fork-cpp-lessons-4.png)
 
 3. Перейти в директорию с проектом
 
@@ -131,7 +137,7 @@ git checkout <your-branch>
 
 После этой команды название ветки в скобках должно измениться с `main` на `your-branch`.
 
-КАРТИНКА
+![fork-cpp-lessons-5](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/fork-cpp-lessons-5.png)
 
 ### 4.2 Отправка работы на проверку
 1. После выполнения задания коммитим изменения и отправляем их в **свой, форкнутый** репозиторий на GitHub.  
@@ -143,8 +149,11 @@ git commit -m "Любое информативное сообщение, отр�
 git push -u origin название_ветки
 ```
 
-2. Переходим на GitHub, в свой репозиторий, и создаем pull request (запрос на вытягивание/слияние) как на скриншоте
+2. Переходим на GitHub, в свой репозиторий, и создаем pull request (запрос на вытягивание/слияние) как на скриншоте.
+![fork-cpp-lessons-6](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/fork-cpp-lessons-6.png)
+> [!IMPORTANT]
+> Выбираем одноименную ветку с вашей. В другие ветки делать запрос не нужно.
 
 3. Ждем обратной связи касательно отправленного решения задачи.
-
+![fork-cpp-lessons-7](https://raw.githubusercontent.com/Seredenko-V/cpp-lessons/main/tutorial-screens/fork-cpp-lessons-7.png)
 
